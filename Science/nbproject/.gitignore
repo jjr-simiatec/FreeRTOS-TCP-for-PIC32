@@ -1,0 +1,5 @@
+# MPLAB X house-keeping files
+private/
+*.mk
+*.properties
+*.bash

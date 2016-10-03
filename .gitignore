@@ -31,3 +31,7 @@
 # Debug files
 *.dSYM/
 *.su
+
+# External source symbolic links
+/FreeRTOS
+/FreeRTOS-Plus
