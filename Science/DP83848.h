@@ -1,0 +1,83 @@
+/*
+ * DP83848 PHY Driver
+ * 
+ * Copyright (c) 2016 John Robertson
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef DP83848_H
+#define DP83848_H
+
+#include "PHYGeneric.h"
+
+typedef enum {
+    DP83848_REG_PHY_STATUS = 16,
+    DP83848_REG_INTERRUPT_CONTROL,
+    DP83848_REG_INTERRUPT_STATUS,
+    DP83848_REG_FALSE_CARRIER_COUNTER = 20,
+    DP83848_REG_RECEIVE_ERROR_COUNTER,
+    DP83848_REG_PCS_CONFIG_STATUS,
+    DP83848_REG_RMII_AND_BYPASS,
+    DP83848_REG_LED_CONTROL,
+    DP83848_REG_PHY_CONTROL,
+    DP83848_REG_10BASET_STATUS_CONTROL,
+    DP83848_REG_CD_TEST_AND_BIST,
+    DP83848_REG_ENERGY_DETECT = 29
+} dp83848_register_t;
+
+// DP83848_REG_PHY_STATUS
+typedef enum {
+    DP83848_PHYSTS_MDI_SWAPPED = 1 << 14,
+    DP83848_PHYSTS_RX_ERROR_LATCH = 1 << 13,
+    DP83848_PHYSTS_INVERTED_POLARITY = 1 << 12,
+    DP83848_PHYSTS_FALSE_CARRIER_LATCH = 1 << 11,
+    DP83848_PHYSTS_100BASETX_SIGNAL_DETECT = 1 << 10,
+    DP83848_PHYSTS_100BASETX_DESCRAMBLER_LOCK = 1 << 9,
+    DP83848_PHYSTS_PAGE_RECEIVED = 1 << 8,
+    DP83848_PHYSTS_INTERRUPT_PENDING = 1 << 7,
+    DP83848_PHYSTS_REMOTE_FAULT = 1 << 6,
+    DP83848_PHYSTS_JABBER_DETECTED = 1 << 5,
+    DP83848_PHYSTS_AUTO_NEG_COMPLETE = 1 << 4,
+    DP83848_PHYSTS_LOOPBACK_ENABLED = 1 << 3,
+    DP83848_PHYSTS_FULL_DUPLEX = 1 << 2,
+    DP83848_PHYSTS_SPEED_10MBPS = 1 << 1,
+    DP83848_PHYSTS_LINK_ESTABLISHED = 1 << 0
+} dp83848_phy_status_t;
+
+// DP83848_REG_INTERRUPT_CONTROL
+typedef enum {
+    DP83848_MICR_TEST_INTERRUPT = 1 << 2,
+    DP83848_MICR_INTERRUPT_ENABLE = 1 << 1,
+    DP83848_MICR_INTERRUPT_OUTPUT_ENABLE = 1 << 0
+} dp83848_interrupt_control_t;
+
+// DP83848_REG_INTERRUPT_STATUS
+typedef enum {
+    DP83848_MISR_ENERGY_DETECT = 1 << 14,
+    DP83848_MISR_LINK_STATUS_CHANGE = 1 << 13,
+    DP83848_MISR_SPEED_STATUS_CHANGE = 1 << 12,
+    DP83848_MISR_DUPLEX_STATUS_CHANGE = 1 << 11,
+    DP83848_MISR_AUTO_NEG_COMPLETE = 1 << 10,
+    DP83848_MISR_FALSE_CARRIER_COUNT_HALF_FULL = 1 << 9,
+    DP83848_MISR_RX_ERROR_COUNT_HALF_FULL = 1 << 8,
+    DP83848_MISR_ENABLE_ENERGY_DETECT_INT = 1 << 6,
+    DP83848_MISR_ENABLE_LINK_CHANGE_INT = 1 << 5,
+    DP83848_MISR_ENABLE_SPEED_CHANGE_INT = 1 << 4,
+    DP83848_MISR_ENABLE_DUPLECT_CHANGE_INT = 1 << 3,
+    DP83848_MISR_ENABLE_AUTO_NEG_COMPLETE_INT = 1 << 2,
+    DP83848_MISR_ENABLE_FALSE_CARRIER_INT = 1 << 1,
+    DP83848_MISR_ENABLE_RX_ERROR_INT = 1 << 0
+} dp83848_interrupt_status_t;
+
+#endif // DP83848_H
