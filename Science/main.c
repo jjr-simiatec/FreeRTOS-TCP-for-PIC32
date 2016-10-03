@@ -1,5 +1,5 @@
 /*
- * Simple UART console driver for PIC32
+ * Startup and Hardware Configuration
  * 
  * Copyright (c) 2016 John Robertson
  * 
