@@ -275,7 +275,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
         memset(s_tTxDMADescriptors, 0, sizeof(s_tTxDMADescriptors));
         memset(s_tRxDMADescriptors, 0, sizeof(s_tRxDMADescriptors));
         
-        xTaskCreate(&EthernetTask, "EthDrv", configMINIMAL_STACK_SIZE * 2, NULL, configMAX_PRIORITIES - 2, &s_hEthernetTask);
+        xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &s_hEthernetTask);
     }
         
     ControllerInitialise();
@@ -316,7 +316,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
     EMAC1MAXF = ipTOTAL_ETHERNET_FRAME_SIZE;
     
     // Enable interrupts and begin receiving
-    IPCbits.ETHIP = configKERNEL_INTERRUPT_PRIORITY;    
+    IPCbits.ETHIP = ipconfigPIC32_ETH_INT_PRIORITY;    
     CLEAR_INTERRUPT_FLAG();
     ENABLE_INTERRUPT();
     

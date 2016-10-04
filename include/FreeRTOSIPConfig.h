@@ -372,5 +372,8 @@ messages. */
 
 #define ipconfigPIC32_TX_DMA_DESCRIPTORS    10
 #define ipconfigPIC32_RX_DMA_DESCRIPTORS    20
+#define ipconfigPIC32_DRV_TASK_PRIORITY     (configMAX_PRIORITIES - 2)
+#define ipconfigPIC32_DRV_TASK_STACK_SIZE   (configMINIMAL_STACK_SIZE * 2)
+#define ipconfigPIC32_ETH_INT_PRIORITY      configKERNEL_INTERRUPT_PRIORITY
 
 #endif /* FREERTOS_IP_CONFIG_H */
