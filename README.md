@@ -80,3 +80,6 @@ The following configuration parameters are available:
 `ipconfigPIC32_RX_DMA_DESCRIPTORS` - Number of receive DMA descriptors  
 `ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ` - Maximum MDC clock speed allowed by the PHY. Defaults to 2.5 MHz  
 `ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - For the MZ, it should be set to the frequency of TPBCLK5  
+`ipconfigPIC32_DRV_TASK_PRIORITY` - Driver task priority  
+`ipconfigPIC32_DRV_TASK_STACK_SIZE` - Driver task stack size in words  
+`ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority  
