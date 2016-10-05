@@ -132,7 +132,8 @@ portTASK_FUNCTION(EthernetTask, pParams)
       
                     SwapPacketBuffers(pStackRxDescriptor, pRxDescriptor);
                     
-                    pStackRxDescriptor->xDataLength = s_pCurrentRxDMADescKVA->hdr.Count;
+                    // The Rx buffer also contains the Frame Check Sequence which is not needed
+                    pStackRxDescriptor->xDataLength = s_pCurrentRxDMADescKVA->hdr.Count - 4;
                                         
                     tStackEvent.pvData = pStackRxDescriptor;
 
