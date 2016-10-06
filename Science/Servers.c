@@ -30,14 +30,13 @@
 
 #define mainRAM_DISK_NAME               "/ram"
 
+static const char pBOARD_NAME[] = "pic32mz";
+
 static const struct xSERVER_CONFIG xServerConfiguration[] =
 {
-    /* Server type,     port number,    backlog,    root dir. */
-    { eSERVER_HTTP,     80,             12,         configHTTP_ROOT },
-
-#if( mainCREATE_FTP_SERVER == 1 )
-    { eSERVER_FTP,      21,             12,         "" }
-#endif /* mainCREATE_FTP_SERVER */
+    // Server type,     port number,    backlog,    root dir.
+    {  eSERVER_HTTP,    80,             12,         configHTTP_ROOT },
+    {  eSERVER_FTP,     21,             12,         "" }
 };
 
 #if defined(__PIC32MZ__)
@@ -46,6 +45,7 @@ static uint8_t ucRAMDisk[mainRAM_DISK_SECTORS * mainRAM_DISK_SECTOR_SIZE];
 
 static FF_Disk_t *pxRAMDisk = NULL;
 extern TaskHandle_t g_hTask2;
+extern TaskHandle_t g_hPacketTask;
 
 extern void vCreateAndVerifyExampleFiles(char *pcMountPath);
 
@@ -54,6 +54,7 @@ void vApplicationIPNetworkEventHook(eIPCallbackEvent_t eNetworkEvent)
     if(eNetworkEvent == eNetworkUp)
     {
         xTaskNotifyGive(g_hTask2);
+        xTaskNotifyGive(g_hPacketTask);
     }
 }
 
@@ -66,11 +67,7 @@ void vApplicationPingReplyHook(ePingReplyStatus_t eStatus, uint16_t usIdentifier
 
 BaseType_t xApplicationDNSQueryHook(const char *pcName)
 {
-#ifdef __DEBUG
-//    __builtin_software_breakpoint();
-#endif // __DEBUG
-    
-    return 0;
+    return strcasecmp(pcName, pBOARD_NAME) == 0;
 }
 
 #if defined(__PIC32MX__)
