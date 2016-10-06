@@ -101,7 +101,7 @@ used as defaults. */
 
 /* Include support for LLMNR: Link-local Multicast Name Resolution
 (non-Microsoft) */
-#define ipconfigUSE_LLMNR                       ( 0 )
+#define ipconfigUSE_LLMNR                       ( 1 )
 
 /* Include support for NBNS: NetBIOS Name Service (Microsoft) */
 #define ipconfigUSE_NBNS                        ( 0 )
