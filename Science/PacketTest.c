@@ -97,19 +97,17 @@ portTASK_FUNCTION(PacketTask, pParams)
 
     PR3 = (configPERIPHERAL_CLOCK_HZ / PACKET_TIMER_HZ) - 1;
     
-    // Setup timer 2 interrupt priority to be above the kernel priority so
-    // the timer jitter is not effected by the kernel activity.
-    IPC3bits.T3IP = configKERNEL_INTERRUPT_PRIORITY;
+    // Set the timer interrupt priority to be above the kernel priority so
+    // the timer is not effected by the kernel activity
+    IPC3bits.T3IP = configMAX_SYSCALL_INTERRUPT_PRIORITY;
 
-    // Clear the interrupt as a starting condition.
+    // Prepare for interrupts
     IFS0bits.T3IF = 0;
-
-    // Enable the interrupt.
     IEC0bits.T3IE = 1;
 
-    // Start the timer.
-    T3CONbits.TON = 1;
-    
+    // Wait for the link to come up
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        
     Socket_t tTxSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
     
     configASSERT(tTxSocket != FREERTOS_INVALID_SOCKET);
@@ -132,6 +130,9 @@ portTASK_FUNCTION(PacketTask, pParams)
     tDestAddr.sin_addr = FreeRTOS_inet_addr_quick(10, 10, 10, 11);
     tDestAddr.sin_port = FreeRTOS_htons(12345);
     
+    // Start the packet trigger timer
+    T3CONbits.TON = 1;
+
     for( ; ; )
     {
 #if defined(BYPASS_TCPIP_STACK)
@@ -184,6 +185,9 @@ portTASK_FUNCTION(PacketTask, pParams)
 portTASK_FUNCTION(PacketTask, pParams)
 {
     portTASK_USES_FLOATING_POINT();
+
+    // Wait for the link to come up
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
     Socket_t tRxSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
     

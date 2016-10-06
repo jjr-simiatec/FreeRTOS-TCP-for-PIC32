@@ -67,6 +67,7 @@ portTASK_FUNCTION_PROTO(PacketTask, pParams);
 
 TaskHandle_t g_hTask1;
 TaskHandle_t g_hTask2;
+TaskHandle_t g_hPacketTask;
 
 /*
  * 
@@ -85,7 +86,7 @@ int main(int argc, char *argv[])
     
     xTaskCreate(&Task1, "Task1", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask1);
     xTaskCreate(&Task2, "Task2", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask2);
-    xTaskCreate(&PacketTask, "PacketTx", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(&PacketTask, "PacketTx", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 4, &g_hPacketTask);
     
     uint8_t tMacAddr[ipMAC_ADDRESS_LENGTH_BYTES] = {EMAC1SA2bits.STNADDR1, EMAC1SA2bits.STNADDR2,
                                                     EMAC1SA1bits.STNADDR3, EMAC1SA1bits.STNADDR4,
