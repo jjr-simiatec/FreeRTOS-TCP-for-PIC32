@@ -126,7 +126,7 @@ configMAX_PRIORITIES is a standard FreeRTOS configuration parameter defined in
 FreeRTOSConfig.h, not FreeRTOSIPConfig.h. Consideration needs to be given as to
 the priority assigned to the task executing the IP stack relative to the
 priority assigned to tasks that use the IP stack. */
-#define ipconfigIP_TASK_PRIORITY                ( configMAX_PRIORITIES - 2 )
+#define ipconfigIP_TASK_PRIORITY                ( configMAX_PRIORITIES - 3 )
 
 /* The size, in words (not bytes), of the stack allocated to the FreeRTOS+TCP
 task.  This setting is less important when the FreeRTOS Win32 simulator is used
@@ -224,6 +224,10 @@ are available to the IP stack.  The total number of network buffers is limited
 to ensure the total amount of RAM that can be consumed by the IP stack is capped
 to a pre-determinable value. */
 #define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS  40
+
+/* Optimisation that allows more than one Rx buffer to be passed to the TCP task
+at a time - requires driver support. */
+#define ipconfigUSE_LINKED_RX_MESSAGES		( 1 )
 
 /* A FreeRTOS queue is used to send events from application tasks to the IP
 stack.  ipconfigEVENT_QUEUE_LENGTH sets the maximum number of events that can
@@ -330,10 +334,8 @@ when ipconfigDHCP_USES_USER_HOOK is set to 1. */
 #define ipconfigUSE_DHCP_HOOK                   ( 0 )
 
 /* Include both TCP and HTTP. */
-#if !defined(__PIC32MX__)
 #define ipconfigUSE_FTP                         1
 #define ipconfigUSE_HTTP                        1
-#endif
 
 /* Dimension the buffers and windows used by the FTP and HTTP servers. */
 #define ipconfigFTP_TX_BUFSIZE                  ( 4 * ipconfigTCP_MSS )
@@ -375,5 +377,6 @@ messages. */
 #define ipconfigPIC32_DRV_TASK_PRIORITY     (configMAX_PRIORITIES - 2)
 #define ipconfigPIC32_DRV_TASK_STACK_SIZE   (configMINIMAL_STACK_SIZE * 2)
 #define ipconfigPIC32_ETH_INT_PRIORITY      configKERNEL_INTERRUPT_PRIORITY
+#define ipconfigPIC32_DRV_TASK_BLOCK_TIME   pdMS_TO_TICKS(10)
 
 #endif /* FREERTOS_IP_CONFIG_H */

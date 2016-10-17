@@ -38,6 +38,10 @@
 #error ipconfigZERO_COPY_TX_DRIVER must be set to 1
 #endif
 
+#if ipconfigUSE_LINKED_RX_MESSAGES == 0
+#error ipconfigUSE_LINKED_RX_MESSAGES must be set to 1
+#endif
+
 #if defined(__PIC32MZ__)
 void __attribute__(( interrupt(IPL0AUTO), vector(_ETHERNET_VECTOR) )) EthernetInterruptWrapper(void);
 #define IPCbits IPC38bits
@@ -73,8 +77,6 @@ static const uint8_t pMIIM_CLOCK_DIVIDERS[] = {
 #if !defined(ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ)
 #define ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ    2500000UL
 #endif // ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ
-
-#define ETH_TASK_BLOCK_TIME     pdMS_TO_TICKS(10)
 
 #define NET_BUFFER_SIZE (ipTOTAL_ETHERNET_FRAME_SIZE + ipBUFFER_PADDING)
 #define NET_BUFFER_SIZE_ROUNDED_UP ((NET_BUFFER_SIZE + 3) & ~0x03UL)
@@ -112,15 +114,18 @@ portTASK_FUNCTION(EthernetTask, pParams)
     for( ; ; )
     {
         uint32_t nTaskEvents;
-        
+
         xTaskNotifyWait(0, ULONG_MAX, &nTaskEvents, portMAX_DELAY);
-        
+
         IPStackEvent_t tStackEvent;
 
         if(nTaskEvents & _ETHIRQ_RXDONE_MASK)
         {
             tStackEvent.eEventType = eNetworkRxEvent;
-            
+            tStackEvent.pvData = NULL;
+
+            NetworkBufferDescriptor_t *pTailDescriptor = NULL;
+
             while((s_pCurrentRxDMADescKVA->hdr.control & ETH_DESC_EOWN) == 0)
             {
                 // Prepare packet to be sent to the stack for processing
@@ -129,51 +134,61 @@ portTASK_FUNCTION(EthernetTask, pParams)
                 if( pStackRxDescriptor )
                 {
                     NetworkBufferDescriptor_t *pRxDescriptor = pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pBufferPA) );
-      
+
                     SwapPacketBuffers(pStackRxDescriptor, pRxDescriptor);
-                    
+
                     // The Rx buffer also contains the Frame Check Sequence which is not needed
                     pStackRxDescriptor->xDataLength = s_pCurrentRxDMADescKVA->hdr.Count - 4;
-                                        
-                    tStackEvent.pvData = pStackRxDescriptor;
+                    pStackRxDescriptor->pxNextBuffer = NULL;
 
-                    // Prepare the DMA descriptor to receive again
                     s_pCurrentRxDMADescKVA->pBufferPA = (uint8_t *) KVA_TO_PA(pRxDescriptor->pucEthernetBuffer);
-                    s_pCurrentRxDMADescKVA->status = 0;
-                    s_pCurrentRxDMADescKVA->hdr.control = ETH_DESC_NPV | ETH_DESC_EOWN;
 
-                    ETHCON1SET = _ETHCON1_BUFCDEC_MASK;
-
-                    if( !xSendEventStructToIPTask(&tStackEvent, ETH_TASK_BLOCK_TIME) )
-                    {
-                        vReleaseNetworkBufferAndDescriptor(pStackRxDescriptor);
-                        iptraceETHERNET_RX_EVENT_LOST();
-                    }
+                    if( !tStackEvent.pvData )
+                        tStackEvent.pvData = pStackRxDescriptor;
                     else
-                    {
-                        iptraceNETWORK_INTERFACE_RECEIVE();
-                    }
+                        pTailDescriptor->pxNextBuffer = pStackRxDescriptor;
+
+                    pTailDescriptor = pStackRxDescriptor;
+
+                    iptraceNETWORK_INTERFACE_RECEIVE();
                 }
                 else
                 {
                     s_tStats.rxNoBuffers++;
-                    
-                    s_pCurrentRxDMADescKVA->status = 0;
-                    s_pCurrentRxDMADescKVA->hdr.control = ETH_DESC_NPV | ETH_DESC_EOWN;
+                    iptraceETHERNET_RX_EVENT_LOST();
+                }
 
-                    ETHCON1SET = _ETHCON1_BUFCDEC_MASK;
+                // Prepare the DMA descriptor to receive again
+                s_pCurrentRxDMADescKVA->status = 0;
+                s_pCurrentRxDMADescKVA->hdr.control = ETH_DESC_NPV | ETH_DESC_EOWN;
+
+                ETHCON1SET = _ETHCON1_BUFCDEC_MASK;
+
+                s_pCurrentRxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pNextDescriptorPA);
+            }
+
+            if( tStackEvent.pvData )
+            {
+                if( !xSendEventStructToIPTask(&tStackEvent, ipconfigPIC32_DRV_TASK_BLOCK_TIME) )
+                {
+                    do
+                    {
+                        NetworkBufferDescriptor_t *pPacketToDump = tStackEvent.pvData;
+                        tStackEvent.pvData = pPacketToDump->pxNextBuffer;
+
+                        vReleaseNetworkBufferAndDescriptor(pPacketToDump);
+                    }
+                    while( tStackEvent.pvData );
 
                     iptraceETHERNET_RX_EVENT_LOST();
                 }
-                
-                s_pCurrentRxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pNextDescriptorPA);
             }
         }
 
         if(nTaskEvents & _ETHIRQ_TXDONE_MASK)
         {
             xSemaphoreTake(s_hTxDMABufMutex, portMAX_DELAY);
-            
+
             while( s_pPendingTxDMADescKVA->pBufferPA && ((s_pPendingTxDMADescKVA->hdr.control & ETH_DESC_EOWN) == 0) )
             {                
                 uint8_t *pBuffer = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pBufferPA);
@@ -181,16 +196,16 @@ portTASK_FUNCTION(EthernetTask, pParams)
                 s_pPendingTxDMADescKVA->pBufferPA = NULL;
                 s_pPendingTxDMADescKVA->status = 0;
                 s_pPendingTxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pNextDescriptorPA);
-                
+
                 // Release the mutex while the buffer is released and reacquire afterwards
                 xSemaphoreGive(s_hTxDMABufMutex);
-                
-                xSemaphoreGive(s_hTxDMABufCountSemaphore);                
+
+                xSemaphoreGive(s_hTxDMABufCountSemaphore);
                 vReleaseNetworkBufferAndDescriptor( pxPacketBuffer_to_NetworkBuffer(pBuffer) );
-                
+
                 xSemaphoreTake(s_hTxDMABufMutex, portMAX_DELAY);
             }
-                        
+
             xSemaphoreGive(s_hTxDMABufMutex);
         }
 
@@ -268,6 +283,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
 {
     if( !s_hEthernetTask )
     {
+        // First time through
         g_hLinkUpSemaphore = xSemaphoreCreateBinary();
         s_hTxDMABufCountSemaphore = xSemaphoreCreateCounting(ipconfigPIC32_TX_DMA_DESCRIPTORS, ipconfigPIC32_TX_DMA_DESCRIPTORS);
         s_hTxDMABufMutex = xSemaphoreCreateMutex();
@@ -277,6 +293,12 @@ BaseType_t xNetworkInterfaceInitialise(void)
         memset(s_tRxDMADescriptors, 0, sizeof(s_tRxDMADescriptors));
         
         xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &s_hEthernetTask);
+    }
+    else
+    {
+        // Link failed/stack reset
+        s_tStats.linkFailures++;
+        iptraceNETWORK_DOWN();
     }
         
     ControllerInitialise();
@@ -338,7 +360,7 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxNetworkBu
         return pdFALSE;
     }
     
-    if( !xSemaphoreTake(s_hTxDMABufCountSemaphore, ETH_TASK_BLOCK_TIME) )
+    if( !xSemaphoreTake(s_hTxDMABufCountSemaphore, ipconfigPIC32_DRV_TASK_BLOCK_TIME) )
     {
         vReleaseNetworkBufferAndDescriptor(pxNetworkBuffer);
         s_tStats.txNoDMADescriptors++;
