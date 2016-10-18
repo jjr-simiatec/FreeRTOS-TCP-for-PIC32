@@ -1,8 +1,8 @@
 /*
  * Simple UART console driver for PIC32
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -26,13 +26,26 @@
 
     .extern xISRStackTop
 
+#if defined(__PIC32MZ__)
+
     .global Uart2FaultInterruptWrapper
     .global Uart2TxInterruptWrapper
     .global Uart2RxInterruptWrapper
 
+#elif defined(__PIC32MX__)    
+
+    .global Uart2InterruptWrapper
+
+#else
+#error Unsupported processor!
+#endif
+
+
     .set    nomips16
     .set    noreorder
     .set    noat
+
+#if defined(__PIC32MZ__)
 
     .ent    Uart2FaultInterruptWrapper
 Uart2FaultInterruptWrapper:
@@ -60,3 +73,16 @@ Uart2RxInterruptWrapper:
     portRESTORE_CONTEXT
 
     .end    Uart2RxInterruptWrapper
+
+#elif defined(__PIC32MX__)
+
+    .ent    Uart2InterruptWrapper
+Uart2InterruptWrapper:
+    portSAVE_CONTEXT
+    jal	    Uart2InterruptHandler
+    nop
+    portRESTORE_CONTEXT
+
+    .end    Uart2InterruptWrapper
+
+#endif
