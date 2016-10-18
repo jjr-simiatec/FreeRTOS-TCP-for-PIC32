@@ -30,7 +30,6 @@
       <itemPath>Timer2_isr.S</itemPath>
       <itemPath>Ethernet_ISR.S</itemPath>
       <itemPath>TestHarness.c</itemPath>
-      <itemPath>FATLibraryTest.c</itemPath>
       <itemPath>Servers.c</itemPath>
       <itemPath>LAN8740A.c</itemPath>
       <itemPath>DP83848.c</itemPath>
@@ -233,6 +232,7 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="memories.configurationmemory" value="true"/>
         <property key="memories.dataflash" value="true"/>
         <property key="memories.eeprom" value="true"/>
@@ -712,7 +712,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="memories.configurationmemory" value="true"/>
         <property key="memories.dataflash" value="true"/>
         <property key="memories.eeprom" value="true"/>
@@ -1026,6 +1025,7 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibFileItem>../FAT/dist/MX_795/production/FAT.a</linkerLibFileItem>
             <linkerLibFileItem>../TCPIP/dist/MX_795/production/TCPIP.a</linkerLibFileItem>
             <linkerLibFileItem>../RTOS/dist/MX_795/production/RTOS.a</linkerLibFileItem>
           </linkerLibItems>
@@ -1048,7 +1048,7 @@
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
       <item path="../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_FAT_Demos/CreateAndVerifyExampleFiles.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1064,7 +1064,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_FAT_Demos/test/ff_stdio_tests_with_cwd.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1080,7 +1080,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/portable/common/ff_ramdisk.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1219,20 +1219,6 @@
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
       </C32Global>
-      <item path="FATLibraryTest.c" ex="true" overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
       <item path="LAN8740A.c" ex="true" overriding="false">
         <C32>
         </C32>
@@ -1554,7 +1540,7 @@
                   value=""/>
         <property key="warningmessagebreakoptions.warningmessages" value="holdstate"/>
       </Simulator>
-      <item path="ff_format.c" ex="true" overriding="false">
+      <item path="ff_format.c" ex="false" overriding="false">
         <C32>
         </C32>
         <C32-AR>
