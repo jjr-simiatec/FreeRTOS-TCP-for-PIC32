@@ -1,8 +1,8 @@
 /*
  * PIC32 Ethernet Driver for FreeRTOS+TCP
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -34,13 +34,39 @@
 #include "Ethernet.h"
 #include "PHYGeneric.h"
 
-#if ipconfigZERO_COPY_TX_DRIVER == 0
-#error ipconfigZERO_COPY_TX_DRIVER must be set to 1
+#if (ipconfigZERO_COPY_TX_DRIVER != 1) || (ipconfigZERO_COPY_RX_DRIVER != 1)
+#error ipconfigZERO_COPY_TX_DRIVER/ipconfigZERO_COPY_RX_DRIVER must be set to 1
 #endif
 
-#if ipconfigUSE_LINKED_RX_MESSAGES == 0
+#if (ipconfigUSE_LINKED_RX_MESSAGES != 1)
 #error ipconfigUSE_LINKED_RX_MESSAGES must be set to 1
 #endif
+
+#if !defined(ipconfigPIC32_TX_DMA_DESCRIPTORS)
+#define ipconfigPIC32_TX_DMA_DESCRIPTORS    10
+#endif
+
+#if !defined(ipconfigPIC32_RX_DMA_DESCRIPTORS)
+#define ipconfigPIC32_RX_DMA_DESCRIPTORS    20
+#endif
+
+#if !defined(ipconfigPIC32_DRV_TASK_BLOCK_TICKS)
+#define ipconfigPIC32_DRV_TASK_BLOCK_TICKS  portMAX_DELAY
+#endif
+
+#if !defined(ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ)
+#define ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ    2500000UL
+#endif // ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ
+
+#if !defined(ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ)
+
+#if defined(__PIC32MX__)
+#define ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ   configCPU_CLOCK_HZ
+#elif defined(__PIC32MZ__)
+#define ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ   100000000UL
+#endif
+
+#endif // ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ
 
 #if defined(__PIC32MZ__)
 void __attribute__(( interrupt(IPL0AUTO), vector(_ETHERNET_VECTOR) )) EthernetInterruptWrapper(void);
@@ -58,25 +84,9 @@ void __attribute__(( interrupt(IPL0AUTO), vector(_ETH_VECTOR) )) EthernetInterru
 #error Unsupported processor
 #endif
 
-#if !defined(ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ)
-
-#if defined(__PIC32MX__)
-#define ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ   configCPU_CLOCK_HZ
-#elif defined(__PIC32MZ__)
-#define ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ   100000000UL
-#else
-#error Unsupported processor!
-#endif
-
-#endif // ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ
-
 static const uint8_t pMIIM_CLOCK_DIVIDERS[] = {
     4, 6, 8, 10, 14, 20, 28, 40, 48, 50
 };
-
-#if !defined(ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ)
-#define ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ    2500000UL
-#endif // ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ
 
 #define NET_BUFFER_SIZE (ipTOTAL_ETHERNET_FRAME_SIZE + ipBUFFER_PADDING)
 #define NET_BUFFER_SIZE_ROUNDED_UP ((NET_BUFFER_SIZE + 3) & ~0x03UL)
@@ -104,7 +114,7 @@ static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkB
     uint8_t *pTmp = pFirst->pucEthernetBuffer;
     pFirst->pucEthernetBuffer = pSecond->pucEthernetBuffer;
     pSecond->pucEthernetBuffer = pTmp;
-    
+
     *((NetworkBufferDescriptor_t **)(pFirst->pucEthernetBuffer - ipBUFFER_PADDING)) = pFirst;
     *((NetworkBufferDescriptor_t **)(pSecond->pucEthernetBuffer - ipBUFFER_PADDING)) = pSecond;
 }
@@ -169,7 +179,7 @@ portTASK_FUNCTION(EthernetTask, pParams)
 
             if( tStackEvent.pvData )
             {
-                if( !xSendEventStructToIPTask(&tStackEvent, ipconfigPIC32_DRV_TASK_BLOCK_TIME) )
+                if( !xSendEventStructToIPTask(&tStackEvent, ipconfigPIC32_DRV_TASK_BLOCK_TICKS) )
                 {
                     do
                     {
@@ -190,7 +200,7 @@ portTASK_FUNCTION(EthernetTask, pParams)
             xSemaphoreTake(s_hTxDMABufMutex, portMAX_DELAY);
 
             while( s_pPendingTxDMADescKVA->pBufferPA && ((s_pPendingTxDMADescKVA->hdr.control & ETH_DESC_EOWN) == 0) )
-            {                
+            {
                 uint8_t *pBuffer = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pBufferPA);
 
                 s_pPendingTxDMADescKVA->pBufferPA = NULL;
@@ -225,31 +235,31 @@ void EthernetInterruptHandler(void)
     ETHIRQCLR = irqs;
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
-    
+
     xTaskNotifyFromISR(s_hEthernetTask, irqs, eSetBits, &bHigherPriorityTaskWoken);
 
     CLEAR_INTERRUPT_FLAG();
-        
+
     portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
 }
 
 static void ControllerInitialise(void)
 {
     /** Ethernet Controller initialisation **/
-    
-    // Procedure taken from Microchip document ref. 61155C, section 35.4.10 
+
+    // Procedure taken from Microchip document ref. 61155C, section 35.4.10
     DISABLE_INTERRUPT();
-    
+
     ETHCON1CLR = _ETHCON1_ON_MASK | _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
-    
+
     while( ETHSTATbits.ETHBUSY );
-    
+
     CLEAR_INTERRUPT_FLAG();
-    
+
     // Clear ETHIRQIE
     ETHIEN = 0;
     ETHIRQ = 0;
-            
+
     // Clear ETHTXST ETHRXST
     ETHTXSTCLR = _ETHTXST_TXSTADDR_MASK;
     ETHRXSTCLR = _ETHRXST_RXSTADDR_MASK;
@@ -259,13 +269,13 @@ static void ControllerInitialise(void)
     /** MAC initialisation **/
     EMAC1CFG1SET = _EMAC1CFG1_SOFTRESET_MASK;
     EMAC1CFG1CLR = _EMAC1CFG1_SOFTRESET_MASK;
-    
+
     EMAC1SUPPSET = _EMAC1SUPP_RESETRMII_MASK;
     EMAC1SUPPCLR = _EMAC1SUPP_RESETRMII_MASK;
-    
+
     EMAC1MCFGSET = _EMAC1MCFG_RESETMGMT_MASK;
     EMAC1MCFGCLR = _EMAC1MCFG_RESETMGMT_MASK;
-    
+
     uint32_t c;
     for(c = 0; c < sizeof(pMIIM_CLOCK_DIVIDERS) / sizeof(pMIIM_CLOCK_DIVIDERS[0]); c++)
     {
@@ -275,7 +285,7 @@ static void ControllerInitialise(void)
             break;
         }
     }
-    
+
     while(EMAC1MIND & _EMAC1MIND_MIIMBUSY_MASK);
 }
 
@@ -287,12 +297,14 @@ BaseType_t xNetworkInterfaceInitialise(void)
         g_hLinkUpSemaphore = xSemaphoreCreateBinary();
         s_hTxDMABufCountSemaphore = xSemaphoreCreateCounting(ipconfigPIC32_TX_DMA_DESCRIPTORS, ipconfigPIC32_TX_DMA_DESCRIPTORS);
         s_hTxDMABufMutex = xSemaphoreCreateMutex();
-        
+        configASSERT( g_hLinkUpSemaphore && s_hTxDMABufCountSemaphore && s_hTxDMABufMutex );
+
         memset(&s_tStats, 0, sizeof(s_tStats));
         memset(s_tTxDMADescriptors, 0, sizeof(s_tTxDMADescriptors));
         memset(s_tRxDMADescriptors, 0, sizeof(s_tRxDMADescriptors));
-        
+
         xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &s_hEthernetTask);
+        configASSERT(s_hEthernetTask);
     }
     else
     {
@@ -300,7 +312,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
         s_tStats.linkFailures++;
         iptraceNETWORK_DOWN();
     }
-        
+
     ControllerInitialise();
     PHYInitialise();
 
@@ -309,7 +321,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
     // Configure MAC based on PHY negotiated link parameters
     phy_status_t phyStatus;
     PHYGetStatus(&phyStatus);
-    
+
     if(phyStatus.speed == PHY_SPEED_100MBPS)
         EMAC1SUPPSET = _EMAC1SUPP_SPEEDRMII_MASK;
     else
@@ -326,67 +338,67 @@ BaseType_t xNetworkInterfaceInitialise(void)
         EMAC1CFG2CLR = _EMAC1CFG2_FULLDPLX_MASK;
         EMAC1IPGT = 0x12;
     }
-        
+
     InitialiseDMADescriptorLists();
-    
+
     ETHHT0 = 0;
     ETHHT1 = 0;
-    
+
     ETHRXFC = _ETHRXFC_BCEN_MASK | _ETHRXFC_MCEN_MASK | _ETHRXFC_UCEN_MASK | _ETHRXFC_RUNTEN_MASK | _ETHRXFC_CRCOKEN_MASK;
 
     EMAC1CFG1 = _EMAC1CFG1_RXENABLE_MASK;
     EMAC1CFG2SET = _EMAC1CFG2_PADENABLE_MASK | _EMAC1CFG2_CRCENABLE_MASK;
     EMAC1MAXF = ipTOTAL_ETHERNET_FRAME_SIZE;
-    
+
     // Enable interrupts and begin receiving
-    IPCbits.ETHIP = ipconfigPIC32_ETH_INT_PRIORITY;    
+    IPCbits.ETHIP = ipconfigPIC32_ETH_INT_PRIORITY;
     CLEAR_INTERRUPT_FLAG();
     ENABLE_INTERRUPT();
-    
+
     ETHIENSET = _ETHIEN_RXDONEIE_MASK | _ETHIEN_TXDONEIE_MASK;
-      
+
     ETHCON1SET = _ETHCON1_RXEN_MASK;
-            
+
     return pdPASS;
 }
 
 BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxNetworkBuffer, BaseType_t xReleaseAfterSend)
 {
     configASSERT(xReleaseAfterSend != pdFALSE);
-        
+
     if(pxNetworkBuffer->xDataLength > ipTOTAL_ETHERNET_FRAME_SIZE)
     {
         vReleaseNetworkBufferAndDescriptor(pxNetworkBuffer);
         return pdFALSE;
     }
-    
-    if( !xSemaphoreTake(s_hTxDMABufCountSemaphore, ipconfigPIC32_DRV_TASK_BLOCK_TIME) )
+
+    if( !xSemaphoreTake(s_hTxDMABufCountSemaphore, ipconfigPIC32_DRV_TASK_BLOCK_TICKS) )
     {
         vReleaseNetworkBufferAndDescriptor(pxNetworkBuffer);
         s_tStats.txNoDMADescriptors++;
         return pdFALSE;
     }
-    
+
     xSemaphoreTake(s_hTxDMABufMutex, portMAX_DELAY);
-    
+
     configASSERT(s_pCurrentTxDMADescKVA->pBufferPA == NULL);
     configASSERT((s_pCurrentTxDMADescKVA->hdr.control & ETH_DESC_EOWN) == 0);
-    
+
     s_pCurrentTxDMADescKVA->hdr.control = ETH_DESC_NPV | ETH_DESC_SOP | ETH_DESC_EOP;
 
     s_pCurrentTxDMADescKVA->pBufferPA = (uint8_t *) KVA_TO_PA(pxNetworkBuffer->pucEthernetBuffer);
-    s_pCurrentTxDMADescKVA->hdr.Count = pxNetworkBuffer->xDataLength;    
+    s_pCurrentTxDMADescKVA->hdr.Count = pxNetworkBuffer->xDataLength;
 
     s_pCurrentTxDMADescKVA->hdr.EOWN = 1;
-    
+
     s_pCurrentTxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pCurrentTxDMADescKVA->pNextDescriptorPA);
-        
+
     xSemaphoreGive(s_hTxDMABufMutex);
-    
+
     ETHCON1SET = _ETHCON1_TXRTS_MASK;
-    
+
     iptraceNETWORK_INTERFACE_TRANSMIT();
-            
+
     return pdTRUE;
 }
 
@@ -396,7 +408,7 @@ void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkB
     for(c = 0; c < ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS; c++)
     {
         pxNetworkBuffers[c].pucEthernetBuffer = &s_tNetworkBuffers[c][ipBUFFER_PADDING];
-        
+
         // The need for the following will be removed in a future version of the stack
         *((uintptr_t *) &s_tNetworkBuffers[c][0]) = (uintptr_t) &pxNetworkBuffers[c];
     }
@@ -406,15 +418,15 @@ void InitialiseDMADescriptorLists(void)
 {
     size_t c;
     eth_dma_descriptor_t *p;
-    
+
     // Rx descriptors list with the Ethernet Controller owning all blocks
     for(c = 0; c < ipconfigPIC32_RX_DMA_DESCRIPTORS; c++)
     {
         p = &s_tRxDMADescriptors[c];
-        
+
         p->hdr.control = ETH_DESC_EOWN | ETH_DESC_NPV;
         p->status = 0;
-        
+
         // NetworkBufferDescriptor_t can be retrieved from ipBUFFER_PADDING bytes before the buffer start address
         if( !p->pBufferPA )
         {
@@ -422,21 +434,21 @@ void InitialiseDMADescriptorLists(void)
             configASSERT(pNBD != NULL);
             p->pBufferPA = (uint8_t *) KVA_TO_PA(pNBD->pucEthernetBuffer);
         }
-        
+
         p->pNextDescriptorPA = (struct eth_dma_descriptor_t *) KVA_TO_PA(&s_tRxDMADescriptors[c + 1]);
     }
-    
+
     p->pNextDescriptorPA = (struct eth_dma_descriptor_t *) KVA_TO_PA(&s_tRxDMADescriptors[0]);
-    
+
     ETHRXST = KVA_TO_PA(&s_tRxDMADescriptors[0]);
     s_pCurrentRxDMADescKVA = &s_tRxDMADescriptors[0];
-    
+
     // Tx descriptor list with the PIC32 owning all the blocks
     for(c = 0; c < ipconfigPIC32_TX_DMA_DESCRIPTORS; c++)
     {
         p = &s_tTxDMADescriptors[c];
-        
-        p->hdr.control = ETH_DESC_NPV;        
+
+        p->hdr.control = ETH_DESC_NPV;
         p->status = 0;
 
         if( p->pBufferPA )
@@ -444,15 +456,15 @@ void InitialiseDMADescriptorLists(void)
             vReleaseNetworkBufferAndDescriptor( pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) p->pBufferPA) ) );
             p->pBufferPA = NULL;
         }
-        
+
         p->pNextDescriptorPA = (struct eth_dma_descriptor_t *) KVA_TO_PA(&s_tTxDMADescriptors[c + 1]);
     }
-    
+
     p->pNextDescriptorPA = (struct eth_dma_descriptor_t *) KVA_TO_PA(&s_tTxDMADescriptors[0]);
-    
+
     ETHTXST = KVA_TO_PA(&s_tTxDMADescriptors[0]);
     s_pCurrentTxDMADescKVA = s_pPendingTxDMADescKVA = &s_tTxDMADescriptors[0];
-    
+
     ETHCON2 = (ipTOTAL_ETHERNET_FRAME_SIZE + 15) & ~0x0FUL;
 }
 
