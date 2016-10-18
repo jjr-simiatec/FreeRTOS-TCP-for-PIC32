@@ -1,8 +1,8 @@
 /*
  * Simple UART console driver for PIC32
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -28,6 +28,7 @@ typedef struct {
 
 extern void Uart2Initialise(uint32_t baud);
 extern void Uart2Enable(void);
+extern void Uart2GetStats(uart_stats_t *pStats);
 
 // User interface helpers
 extern int WaitForAKeyPress(TickType_t maxWait);
@@ -35,5 +36,6 @@ extern int InputString(size_t bufSize, char *pBuffer);
 extern bool InputHexValue(size_t bufSize, char *pBuffer, uint32_t *pValue);
 extern bool InputFloatValue(size_t bufSize, char *pBuffer, float *pValue);
 extern bool InputIntValue(size_t bufSize, char *pBuffer, int32_t *pValue);
+extern bool InputIPv4Address(size_t bufSize, char *pBuffer, uint32_t *pAddrN);
 
 #endif // UART2_H
