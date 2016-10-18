@@ -48,13 +48,13 @@
       </logicalFolder>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_ARP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DHCP.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DNS.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_IP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_Sockets.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_Stream_Buffer.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_TCP_IP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_TCP_WIN.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IP.c</itemPath>
+      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DNS.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -65,6 +65,7 @@
   <sourceRootList>
     <Elem>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP</Elem>
     <Elem>../include</Elem>
+    <Elem>.</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -1030,7 +1031,7 @@
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/protocols/Common/FreeRTOS_TCP_server.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1046,7 +1047,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/protocols/FTP/FreeRTOS_FTP_commands.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1062,7 +1063,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/protocols/FTP/FreeRTOS_FTP_server.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1078,7 +1079,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/protocols/HTTP/FreeRTOS_HTTP_commands.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -1094,7 +1095,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/protocols/HTTP/FreeRTOS_HTTP_server.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
