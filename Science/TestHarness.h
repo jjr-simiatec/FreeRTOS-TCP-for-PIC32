@@ -1,8 +1,8 @@
 /*
  * Test Harness Definitions
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -24,8 +24,14 @@
 
 extern uint8_t *g_pTestBuffer;
 
+extern TaskHandle_t g_hTask1;
+extern TaskHandle_t g_hTask2;
+extern TaskHandle_t g_hPacketTask;
+
+extern ePingReplyStatus_t g_tPingReplyStatus;
+extern uint16_t g_nPingReplySequence;
+
 extern void ShowTestTitle(const char *pTitle);
-extern void TestFATLibrary(void);
 extern const char *FloatToStr(double d);
 
 #endif // TEST_HARNESS_H
