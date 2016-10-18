@@ -6,22 +6,22 @@ A FreeRTOS+TCP port for PIC32 microcontrollers.
 
 ## Project structure
 
-`$`  
-`+---FAT`  
-`|   \---nbproject`  
-`+---include`  
-`|   +---MX_795`  
-`|   +---MZ_ECM`  
-`|   \---MZ_EFM`  
-`+---RTOS`  
-`|   \---nbproject`  
-`+---Science`  
-`|   \---nbproject`  
-`\---TCPIP`  
-`    \---nbproject`  
-
+```
+$
++---FAT
+|   \---nbproject
++---include
+|   +---MX_795
+|   +---MZ_ECM
+|   \---MZ_EFM
++---RTOS
+|   \---nbproject
++---Science
+|   \---nbproject
+\---TCPIP
+    \---nbproject
+```
 ## Requirements
-
 To use the source code as-is, you need one of the following Starter Kits:
 
 PIC32 Ethernet Starter Kit, Microchip part no. DM320004.  
@@ -43,9 +43,9 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 
 ## How to build
 
-1. In the root folder (marked `$` in the project structure above), you will need to create symlinks to the locations of the FreeRTOS and FreeRTOS+Plus source tree. For example on Windows:  
+1. In the root folder (marked `$` in the project structure above), you will need to create symlinks to the locations of the FreeRTOS and FreeRTOS-Plus source trees. For example on Windows:  
 `mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS\Source"`  
-`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160823\FreeRTOS-Plus\Source"`  
+`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160823\FreeRTOS-Plus\Source"`
 
 2. Using MPLABX IDE, open the projects `FAT`, `RTOS` and `TCPIP`.
 
@@ -74,21 +74,27 @@ The driver consists of the following files:
 `PHYGeneric.c`  
 `PHYGeneric.h`  
 
-The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the following directives:
+The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the following directives for correct operation:
 
-`#define ipconfigZERO_COPY_TX_DRIVER     (1)`  
-`#define ipconfigZERO_COPY_RX_DRIVER     (1)`  
-`#define ipconfigUSE_LINKED_RX_MESSAGES  (1)`  
+```C
+#define ipconfigZERO_COPY_TX_DRIVER                 (1)
+#define ipconfigZERO_COPY_RX_DRIVER                 (1)
+#define ipconfigUSE_LINKED_RX_MESSAGES              (1)
+#define ipconfigDRIVER_INCLUDED_TX_IP_CHECKSUM      (0)
+#define ipconfigDRIVER_INCLUDED_RX_IP_CHECKSUM      (0)
+#define ipconfigETHERNET_DRIVER_FILTERS_PACKETS     (0)
+#define ipconfigETHERNET_DRIVER_FILTERS_FRAME_TYPES (1)
+```
 
 You will likely need to create a small driver for the PHY you use. Two drivers are provided, one for the DP83848 PHY used in the MX Starter Kit and one for the LAN8740A PHY used in the MZ Starter Kits. Note that this implementation assumes the PHY interrupt line is connected to the microcontroller to detect link state change events.
 
 The following configuration parameters are available. Values without defaults must be configured:
 
-`ipconfigPIC32_TX_DMA_DESCRIPTORS` - Number of transmit DMA descriptors, defaults to 10  
-`ipconfigPIC32_RX_DMA_DESCRIPTORS` - Number of receive DMA descriptors, defaults to 20  
-`ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ` - Maximum MDC clock speed allowed by the PHY, defaults to 2.5 MHz  
-`ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - For the MZ __only__: set to the frequency of T<sub>PBCLK5</sub>  
-`ipconfigPIC32_DRV_TASK_PRIORITY` - Driver task priority  
-`ipconfigPIC32_DRV_TASK_STACK_SIZE` - Driver task stack size in words  
-`ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority  
-`ipconfigPIC32_DRV_TASK_BLOCK_TICKS` - Maximum time the driver task will wait for stack resources, defaults to portMAX_DELAY  
+`ipconfigPIC32_TX_DMA_DESCRIPTORS` - number of transmit DMA descriptors, defaults to 10  
+`ipconfigPIC32_RX_DMA_DESCRIPTORS` - number of receive DMA descriptors, defaults to 20  
+`ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ` - maximum MDC clock speed allowed by the PHY, defaults to 2.5 MHz  
+`ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - for the MZ __only__: frequency of T<sub>PBCLK5</sub>  
+`ipconfigPIC32_DRV_TASK_PRIORITY` - driver task priority  
+`ipconfigPIC32_DRV_TASK_STACK_SIZE` - driver task stack size in words  
+`ipconfigPIC32_ETH_INT_PRIORITY` - ethernet controller interrupt priority  
+`ipconfigPIC32_DRV_TASK_BLOCK_TICKS` - maximum time the driver waits for stack resources, defaults to portMAX_DELAY  
