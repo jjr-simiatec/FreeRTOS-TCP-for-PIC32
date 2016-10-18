@@ -5,7 +5,6 @@ A FreeRTOS+TCP port for PIC32 microcontrollers.
 (Preliminary Documentation)
 
 ## Project structure
-
 ```
 $
 +---FAT
@@ -66,16 +65,15 @@ The web server and ftp server parts of the FreeRTOS+TCP demo also run on the MZ 
 ## Ethernet driver
 
 The driver consists of the following files:
-
-`Ethernet.h`  
-`Ethernet_ISR.S`  
-`NetworkInterface.c`  
-`PHY_isr.S`  
-`PHYGeneric.c`  
-`PHYGeneric.h`  
-
+```
+Ethernet.h
+Ethernet_ISR.S
+NetworkInterface.c
+PHY_isr.S
+PHYGeneric.c
+PHYGeneric.h
+```
 The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the following directives for correct operation:
-
 ```C
 #define ipconfigZERO_COPY_TX_DRIVER                 (1)
 #define ipconfigZERO_COPY_RX_DRIVER                 (1)
@@ -85,7 +83,6 @@ The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the 
 #define ipconfigETHERNET_DRIVER_FILTERS_PACKETS     (0)
 #define ipconfigETHERNET_DRIVER_FILTERS_FRAME_TYPES (1)
 ```
-
 You will likely need to create a small driver for the PHY you use. Two drivers are provided, one for the DP83848 PHY used in the MX Starter Kit and one for the LAN8740A PHY used in the MZ Starter Kits. Note that this implementation assumes the PHY interrupt line is connected to the microcontroller to detect link state change events.
 
 The following configuration parameters are available. Values without defaults must be configured:
@@ -96,5 +93,5 @@ The following configuration parameters are available. Values without defaults mu
 `ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - for the MZ __only__: frequency of T<sub>PBCLK5</sub>  
 `ipconfigPIC32_DRV_TASK_PRIORITY` - driver task priority  
 `ipconfigPIC32_DRV_TASK_STACK_SIZE` - driver task stack size in words  
-`ipconfigPIC32_ETH_INT_PRIORITY` - ethernet controller interrupt priority  
+`ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority  
 `ipconfigPIC32_DRV_TASK_BLOCK_TICKS` - maximum time the driver waits for stack resources, defaults to portMAX_DELAY  
