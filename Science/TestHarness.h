@@ -19,6 +19,10 @@
 #ifndef TEST_HARNESS_H
 #define TEST_HARNESS_H
 
+#define SYSKEY_UNLOCK_SEQ0  0xAA996655UL
+#define SYSKEY_UNLOCK_SEQ1  0x556699AAUL
+#define SYSKEY_LOCK         0UL
+
 #define _countof(x)         (sizeof(x) / sizeof(x[0]))
 #define TEST_BUFFER_SIZE    255
 
