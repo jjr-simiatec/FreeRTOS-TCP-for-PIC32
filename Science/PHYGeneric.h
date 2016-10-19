@@ -1,8 +1,8 @@
 /*
  * Generic PHY Interface and Definitions
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -139,6 +139,12 @@ typedef struct {
 } phy_status_t;
 
 typedef enum {
+    PHY_WOL_INACTIVE,
+    PHY_WOL_INITIALISING,
+    PHY_WOL_ARMED
+} phy_wol_state_t;
+
+typedef enum {
     PHY_TDR_CABLE_UNKNOWN,
     PHY_TDR_CABLE_CAT5,
     PHY_TDR_CABLE_CAT5e,
@@ -157,7 +163,12 @@ typedef enum {
 
 extern const uint16_t nPHY_ADDRESS;
 
+extern volatile UBaseType_t g_wakeOnLAN;
+extern SemaphoreHandle_t g_hLinkUpSemaphore;
+
 extern void PHYInitialise(void);
+extern bool PHYSupportsWOL(void);
+extern void PHYPrepareWakeOnLAN(void);
 extern uint16_t PHYRead(uint8_t reg);
 extern void PHYWrite(uint8_t reg, uint16_t val);
 extern inline uint16_t PHY_MMDRead(uint8_t devad, uint16_t reg);

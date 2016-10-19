@@ -1,8 +1,8 @@
 /*
  * PIC32 Ethernet Driver for FreeRTOS+TCP
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -42,10 +42,10 @@ typedef struct __attribute__((packed, aligned(4))) {
             unsigned EOP : 1;
             unsigned SOP : 1;
         };
-        
+
         uint32_t control;
     } hdr;
-    
+
     uint8_t *pBufferPA;
     volatile uint64_t status;
     struct eth_dma_descriptor_t *pNextDescriptorPA;
@@ -66,5 +66,6 @@ typedef struct {
 
 extern void EthernetGetStats(eth_stats_t *pStats);
 extern void EthernetResetStats(void);
+extern bool EthernetPrepareWakeOnLAN(void);
 
 #endif // ETHERNET_H

@@ -102,12 +102,15 @@ static eth_dma_descriptor_t *s_pPendingTxDMADescKVA;
 static eth_stats_t s_tStats;
 
 static TaskHandle_t s_hEthernetTask = NULL;
-SemaphoreHandle_t g_hLinkUpSemaphore = NULL;
 static SemaphoreHandle_t s_hTxDMABufCountSemaphore = NULL;
 static SemaphoreHandle_t s_hTxDMABufMutex = NULL;
 
+SemaphoreHandle_t g_hLinkUpSemaphore = NULL;
+volatile UBaseType_t g_wakeOnLAN = PHY_WOL_INACTIVE;
+
 portTASK_FUNCTION_PROTO(EthernetTask, pParams);
 static void InitialiseDMADescriptorLists(void);
+static void InitiateWOLandWait(void);
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -313,6 +316,11 @@ BaseType_t xNetworkInterfaceInitialise(void)
         iptraceNETWORK_DOWN();
     }
 
+    if( g_wakeOnLAN )
+    {
+        InitiateWOLandWait();
+    }
+
     ControllerInitialise();
     PHYInitialise();
 
@@ -466,6 +474,34 @@ void InitialiseDMADescriptorLists(void)
     s_pCurrentTxDMADescKVA = s_pPendingTxDMADescKVA = &s_tTxDMADescriptors[0];
 
     ETHCON2 = (ipTOTAL_ETHERNET_FRAME_SIZE + 15) & ~0x0FUL;
+}
+
+bool EthernetPrepareWakeOnLAN(void)
+{
+    if( g_wakeOnLAN || !PHYSupportsWOL() )
+    {
+        return false;
+    }
+
+    g_wakeOnLAN = PHY_WOL_INITIALISING;
+    FreeRTOS_NetworkDown();
+
+    return true;
+}
+
+void InitiateWOLandWait(void)
+{
+    // Silence the Ethernet controller
+    DISABLE_INTERRUPT();
+
+    ETHCON1CLR = _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
+
+    while( ETHSTATbits.RXBUSY || ETHSTATbits.TXBUSY );
+
+    // Arm the PHY and wait for an awakening
+    PHYPrepareWakeOnLAN();
+
+    xSemaphoreTake(g_hLinkUpSemaphore, portMAX_DELAY);
 }
 
 void EthernetGetStats(eth_stats_t *pStats)
