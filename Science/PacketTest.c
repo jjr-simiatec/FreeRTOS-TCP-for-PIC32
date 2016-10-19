@@ -1,8 +1,8 @@
 /*
  * Packet Rx/Tx Performance Test
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -30,7 +30,7 @@
 
 #define PACKET_TIMER_HZ (5000U)
 #define BYPASS_TCPIP_STACK
-//#define BUILD_TRANSMITTER
+#define BUILD_TRANSMITTER
 
 #if defined(__PIC32MZ__)
 #define LATxSET LATHSET
@@ -75,13 +75,23 @@ static const uint8_t pUDP_PACKET_DEFAULTS[] = {
 void vT3InterruptHandler(void)
 {
     IFS0CLR = _IFS0_T3IF_MASK;
-    
+
     LATxSET = 0x01;
-        
+
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(s_hPacketTask, &bHigherPriorityTaskWoken);
 
     portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+}
+
+void Toggle5kHzTraffic(void)
+{
+#if defined(BUILD_TRANSMITTER)
+    T3CONINV = _T3CON_ON_MASK;
+    LATxCLR = 0x03;
+
+    printf("\r\nTransmitter is %s.", T3CONbits.TON ? "running" : "inactive");
+#endif
 }
 
 #if defined(BUILD_TRANSMITTER)
@@ -89,14 +99,14 @@ void vT3InterruptHandler(void)
 portTASK_FUNCTION(PacketTask, pParams)
 {
     portTASK_USES_FLOATING_POINT();
-    
+
     s_hPacketTask = xTaskGetCurrentTaskHandle();
-    
+
     T3CON = 0;
     TMR3 = 0;
 
     PR3 = (configPERIPHERAL_CLOCK_HZ / PACKET_TIMER_HZ) - 1;
-    
+
     // Set the timer interrupt priority to be above the kernel priority so
     // the timer is not effected by the kernel activity
     IPC3bits.T3IP = configMAX_SYSCALL_INTERRUPT_PRIORITY;
@@ -107,37 +117,34 @@ portTASK_FUNCTION(PacketTask, pParams)
 
     // Wait for the link to come up
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
     Socket_t tTxSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
-    
+
     configASSERT(tTxSocket != FREERTOS_INVALID_SOCKET);
 
     struct freertos_sockaddr tSockAddr;
     memset(&tSockAddr, 0, sizeof(tSockAddr));
-    
+
     tSockAddr.sin_family = FREERTOS_AF_INET;
     tSockAddr.sin_port = FreeRTOS_htons(8111);
-    
+
     BaseType_t result = FreeRTOS_bind(tTxSocket, &tSockAddr, sizeof(tSockAddr));
-    
+
     configASSERT(result == 0);
-    
+
     struct freertos_sockaddr tDestAddr;
     memset(&tDestAddr, 0, sizeof(tDestAddr));
-    
+
     tDestAddr.sin_family = FREERTOS_AF_INET;
 //    tDestAddr.sin_addr = FreeRTOS_inet_addr_quick(224, 1, 2, 3);
     tDestAddr.sin_addr = FreeRTOS_inet_addr_quick(10, 10, 10, 11);
     tDestAddr.sin_port = FreeRTOS_htons(12345);
-    
-    // Start the packet trigger timer
-    T3CONbits.TON = 1;
 
     for( ; ; )
     {
 #if defined(BYPASS_TCPIP_STACK)
         NetworkBufferDescriptor_t *pUdpBuffer = NULL;
-        
+
         if( FreeRTOS_IsNetworkUp() )
             pUdpBuffer = pxGetNetworkBufferWithDescriptor( sizeof(UDPPacket_t) + 8, 0 );
 
@@ -149,17 +156,17 @@ portTASK_FUNCTION(PacketTask, pParams)
             pPacket->xIPHeader.usHeaderChecksum = 0;
             pPacket->xIPHeader.usHeaderChecksum = usGenerateChecksum(0UL, (uint8_t *) &pPacket->xIPHeader, ipSIZE_OF_IPv4_HEADER);
             pPacket->xIPHeader.usHeaderChecksum = ~FreeRTOS_htons(pPacket->xIPHeader.usHeaderChecksum);
-            
+
             pUdpBuffer->xDataLength = sizeof(UDPPacket_t) + 8;
         }
 #else
         uint8_t *pUdpBuffer = FreeRTOS_GetUDPPayloadBuffer(128, 0);
 #endif // BYPASS_TCPIP_STACK
-        
+
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        
+
         LATxCLR = 0x01;
-        
+
         if( pUdpBuffer )
         {
 #if defined(BYPASS_TCPIP_STACK)
@@ -175,7 +182,7 @@ portTASK_FUNCTION(PacketTask, pParams)
             }
 
             LATxCLR = 0x02;
-#endif   
+#endif
         }
     }
 }
@@ -190,31 +197,31 @@ portTASK_FUNCTION(PacketTask, pParams)
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
     Socket_t tRxSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
-    
+
     configASSERT(tRxSocket != FREERTOS_INVALID_SOCKET);
 
     struct freertos_sockaddr tSockAddr;
     memset(&tSockAddr, 0, sizeof(tSockAddr));
-    
+
     tSockAddr.sin_family = FREERTOS_AF_INET;
     tSockAddr.sin_port = FreeRTOS_htons(12345);
-    
+
     BaseType_t result = FreeRTOS_bind(tRxSocket, &tSockAddr, sizeof(tSockAddr));
-    
+
     configASSERT(result == 0);
-    
+
     struct freertos_sockaddr tRxAddr;
     memset(&tRxAddr, 0, sizeof(tRxAddr));
-    
+
     for( ; ; )
     {
         uint8_t *pRxData = NULL;
         socklen_t tRxAddrSize = sizeof(tRxAddr);
-        
+
         LATxCLR = 0x04;
         int32_t result = FreeRTOS_recvfrom(tRxSocket, &pRxData, 0, FREERTOS_ZERO_COPY, &tRxAddr, &tRxAddrSize);
         LATxSET = 0x04;
-        
+
         if(result > 0)
         {
             FreeRTOS_ReleaseUDPPayloadBuffer(pRxData);
