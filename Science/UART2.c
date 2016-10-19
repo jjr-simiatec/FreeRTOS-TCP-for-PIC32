@@ -19,6 +19,7 @@
 // RTOS
 #include <FreeRTOS.h>
 #include <queue.h>
+#include <task.h>
 // C Runtime
 #include <stdbool.h>
 #include <stdio.h>
@@ -116,6 +117,19 @@ void Uart2Initialise(uint32_t baud)
 void Uart2Enable(void)
 {
     U2MODESET = _U2MODE_ON_MASK;
+}
+
+void Uart2Flush(void)
+{
+    while( uxQueueMessagesWaiting(s_UartTxQueue) || !U2STAbits.TRMT )
+    {
+        taskYIELD();
+    }
+}
+
+void Uart2FlushInput(void)
+{
+    xQueueReset(s_UartRxQueue);
 }
 
 void Uart2FaultInterruptHandler(void)

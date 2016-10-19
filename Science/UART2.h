@@ -29,6 +29,8 @@ typedef struct {
 extern void Uart2Initialise(uint32_t baud);
 extern void Uart2Enable(void);
 extern void Uart2GetStats(uart_stats_t *pStats);
+extern void Uart2Flush(void);
+extern void Uart2FlushInput(void);
 
 // User interface helpers
 extern int WaitForAKeyPress(TickType_t maxWait);
