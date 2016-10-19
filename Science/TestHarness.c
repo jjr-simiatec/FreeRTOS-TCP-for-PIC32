@@ -19,6 +19,7 @@
 // RTOS
 #include <FreeRTOS.h>
 #include <task.h>
+#include <semphr.h>
 // TCP/IP Stack
 #include <FreeRTOS_IP.h>
 // C Runtime
@@ -91,6 +92,8 @@ static void EthCableDiagnostic(void);
 static void ViewEthernetStats(void);
 static void PingAddress(void);
 static void ResetBoard(void);
+static void TestWOL(void);
+extern void Toggle5kHzTraffic(void);
 
 static const test_info_t s_TESTS[] = {
     {'1', &ViewRTOSRunTimeStats, "VIEW RTOS RUNTIME STATS"  },
@@ -98,6 +101,8 @@ static const test_info_t s_TESTS[] = {
     {'3', &EthCableDiagnostic,   "ETHERNET CABLE DIAGNOSTIC"},
     {'4', &ViewEthernetStats,    "ETHERNET STATISTICS"      },
     {'5', &PingAddress,          "PING ADDRESS"             },
+    {'6', &Toggle5kHzTraffic,    "TOGGLE 5kHz TRANSMITTER"  },
+    {'7', &TestWOL,              "TEST WAKE ON LAN"         },
     {'R', &ResetBoard,           "SOFT RESET"               }
 };
 
@@ -459,6 +464,44 @@ void PingAddress(void)
     default:
         printf("\r\nDon't know what happened...");
     }
+}
+
+void TestWOL(void)
+{
+    ShowTestTitle("WAKE ON LAN");
+
+    printf("Preparing wake on LAN...");
+
+    if( !EthernetPrepareWakeOnLAN() )
+    {
+        printf("\r\nFailed.");
+        return;
+    }
+
+    printf("\r\nGoing to zzzzzzz...");
+
+    Uart2Flush();
+
+    vTaskSuspendAll();
+
+    SYSKEY = SYSKEY_LOCK;
+    SYSKEY = SYSKEY_UNLOCK_SEQ0;
+    SYSKEY = SYSKEY_UNLOCK_SEQ1;
+
+    OSCCONSET = _OSCCON_SLPEN_MASK;
+
+    while( g_wakeOnLAN )
+    {
+        _wait();
+    }
+
+    OSCCONCLR = _OSCCON_SLPEN_MASK;
+
+    SYSKEY = SYSKEY_LOCK;
+
+    xTaskResumeAll();
+
+    printf("\r\nGood morning!");
 }
 
 void ResetBoard(void)
