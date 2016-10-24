@@ -20,6 +20,14 @@
 #define ETHERNET_H
 
 typedef enum {
+    ETH_NORMAL,
+    ETH_WAKE_ON_LAN,
+    ETH_WAKE_ON_LAN_WOKEN,
+    ETH_POWER_DOWN,
+    ETH_SELF_TEST
+} eth_interface_state_t;
+
+typedef enum {
     ETH_DESC_EOWN = 1UL << 7,
     ETH_DESC_NPV = 1UL << 8,
     ETH_DESC_EOP = 1UL << 30,
@@ -66,6 +74,9 @@ typedef struct {
 
 extern void EthernetGetStats(eth_stats_t *pStats);
 extern void EthernetResetStats(void);
+extern eth_interface_state_t EthernetGetInterfaceState(void);
 extern bool EthernetPrepareWakeOnLAN(void);
+extern void EthernetInterfaceUp(void);
+extern void EthernetInterfaceDown(void);
 
 #endif // ETHERNET_H

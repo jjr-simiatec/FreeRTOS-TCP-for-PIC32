@@ -163,7 +163,7 @@ typedef enum {
 
 extern const uint16_t nPHY_ADDRESS;
 
-extern volatile UBaseType_t g_wakeOnLAN;
+extern volatile BaseType_t g_interfaceState;
 extern SemaphoreHandle_t g_hLinkUpSemaphore;
 
 extern void PHYInitialise(void);

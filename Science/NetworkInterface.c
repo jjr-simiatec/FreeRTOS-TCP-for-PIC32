@@ -106,11 +106,13 @@ static SemaphoreHandle_t s_hTxDMABufCountSemaphore = NULL;
 static SemaphoreHandle_t s_hTxDMABufMutex = NULL;
 
 SemaphoreHandle_t g_hLinkUpSemaphore = NULL;
-volatile UBaseType_t g_wakeOnLAN = PHY_WOL_INACTIVE;
+volatile BaseType_t g_interfaceState = ETH_NORMAL;
 
 portTASK_FUNCTION_PROTO(EthernetTask, pParams);
+static void ControllerInitialise(void);
 static void InitialiseDMADescriptorLists(void);
 static void InitiateWOLandWait(void);
+static void PowerdownEthernet(void);
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -246,7 +248,7 @@ void EthernetInterruptHandler(void)
     portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
 }
 
-static void ControllerInitialise(void)
+void ControllerInitialise(void)
 {
     /** Ethernet Controller initialisation **/
 
@@ -316,9 +318,23 @@ BaseType_t xNetworkInterfaceInitialise(void)
         iptraceNETWORK_DOWN();
     }
 
-    if( g_wakeOnLAN )
+    if(g_interfaceState != ETH_NORMAL)
     {
-        InitiateWOLandWait();
+        switch(g_interfaceState)
+        {
+        case ETH_POWER_DOWN:
+            PowerdownEthernet();
+            break;
+
+        case ETH_WAKE_ON_LAN:
+            InitiateWOLandWait();
+            break;
+
+        case ETH_SELF_TEST:
+            break;
+        }
+
+        g_interfaceState = ETH_NORMAL;
     }
 
     ControllerInitialise();
@@ -478,12 +494,12 @@ void InitialiseDMADescriptorLists(void)
 
 bool EthernetPrepareWakeOnLAN(void)
 {
-    if( g_wakeOnLAN || !PHYSupportsWOL() )
+    if( (g_interfaceState != ETH_NORMAL) || !PHYSupportsWOL() )
     {
         return false;
     }
 
-    g_wakeOnLAN = PHY_WOL_INITIALISING;
+    g_interfaceState = ETH_WAKE_ON_LAN;
     FreeRTOS_NetworkDown();
 
     return true;
@@ -502,6 +518,46 @@ void InitiateWOLandWait(void)
     PHYPrepareWakeOnLAN();
 
     xSemaphoreTake(g_hLinkUpSemaphore, portMAX_DELAY);
+}
+
+void PowerdownEthernet(void)
+{
+    DISABLE_INTERRUPT();
+
+    ETHCON1CLR = _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
+    while( ETHSTATbits.RXBUSY || ETHSTATbits.TXBUSY );
+
+    uint16_t bcr = PHYRead(PHY_REG_BASIC_CONTROL);
+    PHYWrite(PHY_REG_BASIC_CONTROL, bcr | PHY_CTRL_POWER_DOWN);
+
+    ETHCON1CLR = _ETHCON1_ON_MASK;
+    while( ETHSTATbits.ETHBUSY );
+
+    xSemaphoreTake(g_hLinkUpSemaphore, portMAX_DELAY);
+}
+
+eth_interface_state_t EthernetGetInterfaceState(void)
+{
+    return g_interfaceState;
+}
+
+void EthernetInterfaceDown(void)
+{
+    if(g_interfaceState != ETH_NORMAL)
+    {
+        return;
+    }
+
+    g_interfaceState = ETH_POWER_DOWN;
+    FreeRTOS_NetworkDown();
+}
+
+void EthernetInterfaceUp(void)
+{
+    if(g_interfaceState == ETH_POWER_DOWN)
+    {
+        xSemaphoreGive(g_hLinkUpSemaphore);
+    }
 }
 
 void EthernetGetStats(eth_stats_t *pStats)
