@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "Ethernet.h"
 #include "LAN8740A.h"
 
 // Software reset corrupts these and so they must be manually
@@ -223,26 +224,29 @@ void PHYInterruptHandler(void)
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
 
-    if( g_wakeOnLAN )
+    if(g_interfaceState == ETH_NORMAL)
+    {
+        if(intSource & (LAN8740_INT_AUTO_NEG_COMPLETE | LAN8740_INT_LINK_DOWN))
+        {
+            uint16_t bs = PHYRead(PHY_REG_BASIC_STATUS);
+
+            if(bs & PHY_STAT_LINK_IS_UP)
+            {
+                xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
+            }
+            else
+            {
+                if( FreeRTOS_NetworkDownFromISR() )
+                    bHigherPriorityTaskWoken = pdTRUE;
+            }
+        }
+    }
+    else if(g_interfaceState == ETH_WAKE_ON_LAN)
     {
         if(intSource & LAN8740_INT_WOL)
         {
-            g_wakeOnLAN = PHY_WOL_INACTIVE;
+            g_interfaceState = ETH_WAKE_ON_LAN_WOKEN;
             xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
-        }
-    }
-    else if(intSource & (LAN8740_INT_AUTO_NEG_COMPLETE | LAN8740_INT_LINK_DOWN))
-    {
-        uint16_t bs = PHYRead(PHY_REG_BASIC_STATUS);
-
-        if(bs & PHY_STAT_LINK_IS_UP)
-        {
-            xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
-        }
-        else
-        {
-            if( FreeRTOS_NetworkDownFromISR() )
-                bHigherPriorityTaskWoken = pdTRUE;
         }
     }
 
@@ -266,6 +270,4 @@ void PHYPrepareWakeOnLAN(void)
 
     IFS0CLR = _IFS0_INT4IF_MASK;
     IEC0SET = _IEC0_INT4IE_MASK;
-
-    g_wakeOnLAN = PHY_WOL_ARMED;
 }
