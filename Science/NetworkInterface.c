@@ -113,6 +113,7 @@ static void ControllerInitialise(void);
 static void InitialiseDMADescriptorLists(void);
 static void InitiateWOLandWait(void);
 static void PowerdownEthernet(void);
+static void ExecuteSelfTests(void);
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -318,29 +319,34 @@ BaseType_t xNetworkInterfaceInitialise(void)
         iptraceNETWORK_DOWN();
     }
 
-    if(g_interfaceState != ETH_NORMAL)
+    do
     {
-        switch(g_interfaceState)
+        if(g_interfaceState != ETH_NORMAL)
         {
-        case ETH_POWER_DOWN:
-            PowerdownEthernet();
-            break;
+            switch(g_interfaceState)
+            {
+            case ETH_POWER_DOWN:
+                PowerdownEthernet();
+                break;
 
-        case ETH_WAKE_ON_LAN:
-            InitiateWOLandWait();
-            break;
+            case ETH_WAKE_ON_LAN:
+                InitiateWOLandWait();
+                break;
 
-        case ETH_SELF_TEST:
-            break;
+            case ETH_SELF_TEST:
+                ExecuteSelfTests();
+                break;
+            }
+
+            g_interfaceState = ETH_NORMAL;
         }
 
-        g_interfaceState = ETH_NORMAL;
+        ControllerInitialise();
+        PHYInitialise();
+
+        xSemaphoreTake(g_hLinkUpSemaphore, portMAX_DELAY);
     }
-
-    ControllerInitialise();
-    PHYInitialise();
-
-    xSemaphoreTake(g_hLinkUpSemaphore, portMAX_DELAY);
+    while(g_interfaceState != ETH_NORMAL);
 
     // Configure MAC based on PHY negotiated link parameters
     phy_status_t phyStatus;
@@ -500,7 +506,11 @@ bool EthernetPrepareWakeOnLAN(void)
     }
 
     g_interfaceState = ETH_WAKE_ON_LAN;
-    FreeRTOS_NetworkDown();
+
+    if( FreeRTOS_IsNetworkUp() )
+        FreeRTOS_NetworkDown();
+    else
+        xSemaphoreGive(g_hLinkUpSemaphore);
 
     return true;
 }
@@ -549,7 +559,11 @@ void EthernetInterfaceDown(void)
     }
 
     g_interfaceState = ETH_POWER_DOWN;
-    FreeRTOS_NetworkDown();
+
+    if( FreeRTOS_IsNetworkUp() )
+        FreeRTOS_NetworkDown();
+    else
+        xSemaphoreGive(g_hLinkUpSemaphore);
 }
 
 void EthernetInterfaceUp(void)
@@ -560,6 +574,21 @@ void EthernetInterfaceUp(void)
     }
 }
 
+void EthernetSelfTest(void)
+{
+    if(g_interfaceState != ETH_NORMAL)
+    {
+        return;
+    }
+
+    g_interfaceState = ETH_SELF_TEST;
+
+    if( FreeRTOS_IsNetworkUp() )
+        FreeRTOS_NetworkDown();
+    else
+        xSemaphoreGive(g_hLinkUpSemaphore);
+}
+
 void EthernetGetStats(eth_stats_t *pStats)
 {
     memcpy(pStats, &s_tStats, sizeof(s_tStats));
@@ -568,4 +597,18 @@ void EthernetGetStats(eth_stats_t *pStats)
 void EthernetResetStats(void)
 {
     memset(&s_tStats, 0, sizeof(s_tStats));
+}
+
+void ExecuteSelfTests(void)
+{
+    ControllerInitialise();
+
+    PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
+    while( PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
+
+    PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
+
+    EMAC1SUPPSET = _EMAC1SUPP_SPEEDRMII_MASK;
+    EMAC1CFG2SET = _EMAC1CFG2_FULLDPLX_MASK;
+    EMAC1IPGT = 0x15;
 }
