@@ -93,17 +93,19 @@ static void ViewEthernetStats(void);
 static void PingAddress(void);
 static void ResetBoard(void);
 static void TestWOL(void);
+static void ToggleEthInterface(void);
 extern void Toggle5kHzTraffic(void);
 
 static const test_info_t s_TESTS[] = {
-    {'1', &ViewRTOSRunTimeStats, "VIEW RTOS RUNTIME STATS"  },
-    {'2', &ViewPHYRegisters,     "VIEW PHY REGISTERS"       },
-    {'3', &EthCableDiagnostic,   "ETHERNET CABLE DIAGNOSTIC"},
-    {'4', &ViewEthernetStats,    "ETHERNET STATISTICS"      },
-    {'5', &PingAddress,          "PING ADDRESS"             },
-    {'6', &Toggle5kHzTraffic,    "TOGGLE 5kHz TRANSMITTER"  },
-    {'7', &TestWOL,              "TEST WAKE ON LAN"         },
-    {'R', &ResetBoard,           "SOFT RESET"               }
+    {'1', &ViewRTOSRunTimeStats, "VIEW RTOS RUNTIME STATS"   },
+    {'2', &ViewPHYRegisters,     "VIEW PHY REGISTERS"        },
+    {'3', &EthCableDiagnostic,   "ETHERNET CABLE DIAGNOSTIC" },
+    {'4', &ViewEthernetStats,    "ETHERNET STATISTICS"       },
+    {'5', &PingAddress,          "PING ADDRESS"              },
+    {'6', &Toggle5kHzTraffic,    "TOGGLE 5kHz TRANSMITTER"   },
+    {'7', &TestWOL,              "TEST WAKE ON LAN"          },
+    {'8', &ToggleEthInterface,   "ETHERNET INTERFACE UP/DOWN"},
+    {'R', &ResetBoard,           "SOFT RESET"                }
 };
 
 static size_t s_nTestMenuTopIndx = 0;
@@ -484,13 +486,15 @@ void TestWOL(void)
 
     vTaskSuspendAll();
 
+    portENTER_CRITICAL();
     SYSKEY = SYSKEY_LOCK;
     SYSKEY = SYSKEY_UNLOCK_SEQ0;
     SYSKEY = SYSKEY_UNLOCK_SEQ1;
+    portEXIT_CRITICAL();
 
     OSCCONSET = _OSCCON_SLPEN_MASK;
 
-    while( g_wakeOnLAN )
+    while( EthernetGetInterfaceState() == ETH_WAKE_ON_LAN )
     {
         _wait();
     }
@@ -502,6 +506,26 @@ void TestWOL(void)
     xTaskResumeAll();
 
     printf("\r\nGood morning!");
+}
+
+void ToggleEthInterface(void)
+{
+    switch( EthernetGetInterfaceState() )
+    {
+    case ETH_NORMAL:
+        printf("\r\nPowering down Ethernet interface.");
+        EthernetInterfaceDown();
+        break;
+
+    case ETH_POWER_DOWN:
+        printf("\r\nPowering up Ethernet interface.");
+        EthernetInterfaceUp();
+        break;
+
+    default:
+        printf("\r\nEthernet interface is in a strange state.");
+    }
+
 }
 
 void ResetBoard(void)
