@@ -58,15 +58,23 @@
 #define ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ    2500000UL
 #endif // ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ
 
-#if !defined(ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ)
 
 #if defined(__PIC32MX__)
+
+#if defined(ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ)
+#error The clock source is not configurable on the PIC32MX
+#endif // ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ
+
 #define ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ   configCPU_CLOCK_HZ
+
 #elif defined(__PIC32MZ__)
+
+#if !defined(ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ)
 #define ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ   100000000UL
+#endif // ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ
+
 #endif
 
-#endif // ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ
 
 #if defined(__PIC32MZ__)
 void __attribute__(( interrupt(IPL0AUTO), vector(_ETHERNET_VECTOR) )) EthernetInterruptWrapper(void);
@@ -109,7 +117,9 @@ SemaphoreHandle_t g_hLinkUpSemaphore = NULL;
 volatile BaseType_t g_interfaceState = ETH_NORMAL;
 
 portTASK_FUNCTION_PROTO(EthernetTask, pParams);
+
 static void ControllerInitialise(void);
+static void MACConfigure(phy_speed_t speed, bool fullDuplex);
 static void InitialiseDMADescriptorLists(void);
 static void InitiateWOLandWait(void);
 static void PowerdownEthernet(void);
@@ -251,8 +261,6 @@ void EthernetInterruptHandler(void)
 
 void ControllerInitialise(void)
 {
-    /** Ethernet Controller initialisation **/
-
     // Procedure taken from Microchip document ref. 61155C, section 35.4.10
     DISABLE_INTERRUPT();
 
@@ -272,7 +280,7 @@ void ControllerInitialise(void)
 
     ETHCON1SET = _ETHCON1_ON_MASK;
 
-    /** MAC initialisation **/
+    // MAC initialisation
     EMAC1CFG1SET = _EMAC1CFG1_SOFTRESET_MASK;
     EMAC1CFG1CLR = _EMAC1CFG1_SOFTRESET_MASK;
 
@@ -293,6 +301,31 @@ void ControllerInitialise(void)
     }
 
     while(EMAC1MIND & _EMAC1MIND_MIIMBUSY_MASK);
+}
+
+void MACConfigure(phy_speed_t speed, bool fullDuplex)
+{
+    if(speed == PHY_SPEED_100MBPS)
+        EMAC1SUPPSET = _EMAC1SUPP_SPEEDRMII_MASK;
+    else
+        EMAC1SUPPCLR = _EMAC1SUPP_SPEEDRMII_MASK;
+
+    // EMAC1IPGT settings as per the reference manual
+    if( fullDuplex )
+    {
+        EMAC1CFG2SET = _EMAC1CFG2_FULLDPLX_MASK;
+        EMAC1IPGT = 0x15;
+    }
+    else
+    {
+        EMAC1CFG2CLR = _EMAC1CFG2_FULLDPLX_MASK;
+        EMAC1IPGT = 0x12;
+    }
+
+    EMAC1CFG1 = _EMAC1CFG1_RXENABLE_MASK;
+    EMAC1CFG2SET = _EMAC1CFG2_PADENABLE_MASK | _EMAC1CFG2_CRCENABLE_MASK;
+
+    EMAC1MAXF = ipTOTAL_ETHERNET_FRAME_SIZE;
 }
 
 BaseType_t xNetworkInterfaceInitialise(void)
@@ -352,33 +385,13 @@ BaseType_t xNetworkInterfaceInitialise(void)
     phy_status_t phyStatus;
     PHYGetStatus(&phyStatus);
 
-    if(phyStatus.speed == PHY_SPEED_100MBPS)
-        EMAC1SUPPSET = _EMAC1SUPP_SPEEDRMII_MASK;
-    else
-        EMAC1SUPPCLR = _EMAC1SUPP_SPEEDRMII_MASK;
-
-    // EMAC1IPGT settings as per the reference manual
-    if( phyStatus.fullDuplex )
-    {
-        EMAC1CFG2SET = _EMAC1CFG2_FULLDPLX_MASK;
-        EMAC1IPGT = 0x15;
-    }
-    else
-    {
-        EMAC1CFG2CLR = _EMAC1CFG2_FULLDPLX_MASK;
-        EMAC1IPGT = 0x12;
-    }
-
+    MACConfigure(phyStatus.speed, phyStatus.fullDuplex);
     InitialiseDMADescriptorLists();
 
     ETHHT0 = 0;
     ETHHT1 = 0;
 
     ETHRXFC = _ETHRXFC_BCEN_MASK | _ETHRXFC_MCEN_MASK | _ETHRXFC_UCEN_MASK | _ETHRXFC_RUNTEN_MASK | _ETHRXFC_CRCOKEN_MASK;
-
-    EMAC1CFG1 = _EMAC1CFG1_RXENABLE_MASK;
-    EMAC1CFG2SET = _EMAC1CFG2_PADENABLE_MASK | _EMAC1CFG2_CRCENABLE_MASK;
-    EMAC1MAXF = ipTOTAL_ETHERNET_FRAME_SIZE;
 
     // Enable interrupts and begin receiving
     IPCbits.ETHIP = ipconfigPIC32_ETH_INT_PRIORITY;
@@ -496,6 +509,11 @@ void InitialiseDMADescriptorLists(void)
     s_pCurrentTxDMADescKVA = s_pPendingTxDMADescKVA = &s_tTxDMADescriptors[0];
 
     ETHCON2 = (ipTOTAL_ETHERNET_FRAME_SIZE + 15) & ~0x0FUL;
+
+    // Make sure the counting semaphore count is reset to all available
+    while( xSemaphoreGive(s_hTxDMABufCountSemaphore) == pdTRUE );
+
+    configASSERT( uxSemaphoreGetCount(s_hTxDMABufCountSemaphore) == ipconfigPIC32_TX_DMA_DESCRIPTORS );
 }
 
 bool EthernetPrepareWakeOnLAN(void)
@@ -608,7 +626,12 @@ void ExecuteSelfTests(void)
 
     PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
 
-    EMAC1SUPPSET = _EMAC1SUPP_SPEEDRMII_MASK;
-    EMAC1CFG2SET = _EMAC1CFG2_FULLDPLX_MASK;
-    EMAC1IPGT = 0x15;
+    MACConfigure(PHY_SPEED_100MBPS, true);
+    InitialiseDMADescriptorLists();
+
+    NetworkBufferDescriptor_t *pxNetworkBuffer = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, 0);
+
+    if( !pxNetworkBuffer )
+    {
+    }
 }
