@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ETHERNET_H
-#define ETHERNET_H
+#ifndef PIC32_ETHERNET_H
+#define PIC32_ETHERNET_H
 
 typedef enum {
     ETH_NORMAL,
@@ -26,38 +26,6 @@ typedef enum {
     ETH_POWER_DOWN,
     ETH_SELF_TEST
 } eth_interface_state_t;
-
-typedef enum {
-    ETH_DESC_EOWN = 1UL << 7,
-    ETH_DESC_NPV = 1UL << 8,
-    ETH_DESC_EOP = 1UL << 30,
-    ETH_DESC_SOP = 1UL << 31,
-    ETH_DESC_COUNT_SHIFT = 16,
-    ETH_DESC_COUNT_MASK = 0x07FF0000UL
-} eth_dma_descriptor_control_bits_t;
-
-typedef struct __attribute__((packed, aligned(4))) {
-    // Volatile members can be updated by the Ethernet controller
-    // Members ending in PA are physical addresses; assign using KVA_TO_PA
-    volatile union {
-        struct {
-            unsigned : 7;
-            unsigned EOWN : 1;
-            unsigned NPV : 1;
-            unsigned : 7;
-            unsigned Count : 11;
-            unsigned : 3;
-            unsigned EOP : 1;
-            unsigned SOP : 1;
-        };
-
-        uint32_t control;
-    } hdr;
-
-    uint8_t *pBufferPA;
-    volatile uint64_t status;
-    struct eth_dma_descriptor_t *pNextDescriptorPA;
-} eth_dma_descriptor_t;
 
 typedef struct {
     uint32_t framesTransmitted;
@@ -78,5 +46,6 @@ extern eth_interface_state_t EthernetGetInterfaceState(void);
 extern bool EthernetPrepareWakeOnLAN(void);
 extern void EthernetInterfaceUp(void);
 extern void EthernetInterfaceDown(void);
+extern void EthernetSelfTest(void);
 
-#endif // ETHERNET_H
+#endif // PIC32_ETHERNET_H

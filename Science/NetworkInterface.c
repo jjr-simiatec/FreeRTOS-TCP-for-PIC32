@@ -32,7 +32,9 @@
 #include <NetworkBufferManagement.h>
 
 #include "Ethernet.h"
+#include "EthernetPrivate.h"
 #include "PHYGeneric.h"
+#include "PIC32Arch.h"
 
 #if (ipconfigZERO_COPY_TX_DRIVER != 1) || (ipconfigZERO_COPY_RX_DRIVER != 1)
 #error ipconfigZERO_COPY_TX_DRIVER/ipconfigZERO_COPY_RX_DRIVER must be set to 1
@@ -123,7 +125,7 @@ static void MACConfigure(phy_speed_t speed, bool fullDuplex);
 static void InitialiseDMADescriptorLists(void);
 static void InitiateWOLandWait(void);
 static void PowerdownEthernet(void);
-static void ExecuteSelfTests(void);
+static bool ExecuteSelfTests(void);
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -185,7 +187,7 @@ portTASK_FUNCTION(EthernetTask, pParams)
                 }
 
                 // Prepare the DMA descriptor to receive again
-                s_pCurrentRxDMADescKVA->status = 0;
+                s_pCurrentRxDMADescKVA->statusVectorLow = s_pCurrentRxDMADescKVA->statusVectorHigh = 0;
                 s_pCurrentRxDMADescKVA->hdr.control = ETH_DESC_NPV | ETH_DESC_EOWN;
 
                 ETHCON1SET = _ETHCON1_BUFCDEC_MASK;
@@ -220,7 +222,7 @@ portTASK_FUNCTION(EthernetTask, pParams)
                 uint8_t *pBuffer = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pBufferPA);
 
                 s_pPendingTxDMADescKVA->pBufferPA = NULL;
-                s_pPendingTxDMADescKVA->status = 0;
+                s_pPendingTxDMADescKVA->statusVectorLow = s_pCurrentRxDMADescKVA->statusVectorHigh = 0;
                 s_pPendingTxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pNextDescriptorPA);
 
                 // Release the mutex while the buffer is released and reacquire afterwards
@@ -291,7 +293,7 @@ void ControllerInitialise(void)
     EMAC1MCFGCLR = _EMAC1MCFG_RESETMGMT_MASK;
 
     uint32_t c;
-    for(c = 0; c < sizeof(pMIIM_CLOCK_DIVIDERS) / sizeof(pMIIM_CLOCK_DIVIDERS[0]); c++)
+    for(c = 0; c < _countof(pMIIM_CLOCK_DIVIDERS); c++)
     {
         if((ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ / pMIIM_CLOCK_DIVIDERS[c]) <= ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ)
         {
@@ -354,9 +356,11 @@ BaseType_t xNetworkInterfaceInitialise(void)
 
     do
     {
-        if(g_interfaceState != ETH_NORMAL)
+        BaseType_t state = g_interfaceState;
+
+        if(state != ETH_NORMAL)
         {
-            switch(g_interfaceState)
+            switch(state)
             {
             case ETH_POWER_DOWN:
                 PowerdownEthernet();
@@ -364,6 +368,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
 
             case ETH_WAKE_ON_LAN:
                 InitiateWOLandWait();
+                state = ETH_WAKE_ON_LAN_WOKEN;
                 break;
 
             case ETH_SELF_TEST:
@@ -371,7 +376,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
                 break;
             }
 
-            g_interfaceState = ETH_NORMAL;
+            InterlockedCompareExchange(&g_interfaceState, ETH_NORMAL, state);
         }
 
         ControllerInitialise();
@@ -468,7 +473,7 @@ void InitialiseDMADescriptorLists(void)
         p = &s_tRxDMADescriptors[c];
 
         p->hdr.control = ETH_DESC_EOWN | ETH_DESC_NPV;
-        p->status = 0;
+        p->statusVectorLow = p->statusVectorHigh = 0;
 
         // NetworkBufferDescriptor_t can be retrieved from ipBUFFER_PADDING bytes before the buffer start address
         if( !p->pBufferPA )
@@ -492,7 +497,7 @@ void InitialiseDMADescriptorLists(void)
         p = &s_tTxDMADescriptors[c];
 
         p->hdr.control = ETH_DESC_NPV;
-        p->status = 0;
+        p->statusVectorLow = p->statusVectorHigh = 0;
 
         if( p->pBufferPA )
         {
@@ -518,12 +523,15 @@ void InitialiseDMADescriptorLists(void)
 
 bool EthernetPrepareWakeOnLAN(void)
 {
-    if( (g_interfaceState != ETH_NORMAL) || !PHYSupportsWOL() )
+    if( !PHYSupportsWOL() )
     {
         return false;
     }
 
-    g_interfaceState = ETH_WAKE_ON_LAN;
+    if( InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN, ETH_NORMAL) != ETH_NORMAL )
+    {
+        return false;
+    }
 
     if( FreeRTOS_IsNetworkUp() )
         FreeRTOS_NetworkDown();
@@ -571,12 +579,10 @@ eth_interface_state_t EthernetGetInterfaceState(void)
 
 void EthernetInterfaceDown(void)
 {
-    if(g_interfaceState != ETH_NORMAL)
+    if( InterlockedCompareExchange(&g_interfaceState, ETH_POWER_DOWN, ETH_NORMAL) != ETH_NORMAL )
     {
         return;
     }
-
-    g_interfaceState = ETH_POWER_DOWN;
 
     if( FreeRTOS_IsNetworkUp() )
         FreeRTOS_NetworkDown();
@@ -594,12 +600,10 @@ void EthernetInterfaceUp(void)
 
 void EthernetSelfTest(void)
 {
-    if(g_interfaceState != ETH_NORMAL)
+    if( InterlockedCompareExchange(&g_interfaceState, ETH_SELF_TEST, ETH_NORMAL) != ETH_NORMAL )
     {
         return;
     }
-
-    g_interfaceState = ETH_SELF_TEST;
 
     if( FreeRTOS_IsNetworkUp() )
         FreeRTOS_NetworkDown();
@@ -617,7 +621,7 @@ void EthernetResetStats(void)
     memset(&s_tStats, 0, sizeof(s_tStats));
 }
 
-void ExecuteSelfTests(void)
+bool ExecuteSelfTests(void)
 {
     ControllerInitialise();
 
@@ -627,11 +631,34 @@ void ExecuteSelfTests(void)
     PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
 
     MACConfigure(PHY_SPEED_100MBPS, true);
+    EMAC1CFG1SET = _EMAC1CFG1_LOOPBACK_MASK;
+
     InitialiseDMADescriptorLists();
 
-    NetworkBufferDescriptor_t *pxNetworkBuffer = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, 0);
+    ETHRXFC = _ETHRXFC_BCEN_MASK | _ETHRXFC_MCEN_MASK | _ETHRXFC_NOTMEEN_MASK | _ETHRXFC_UCEN_MASK | _ETHRXFC_CRCOKEN_MASK;
 
-    if( !pxNetworkBuffer )
+    ETHIENSET = _ETHIEN_RXDONEIE_MASK | _ETHIEN_TXDONEIE_MASK;
+    ETHCON1SET = _ETHCON1_RXEN_MASK;
+
+    NetworkBufferDescriptor_t *pTxDescriptor = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, 0);
+
+    if( !pTxDescriptor )
     {
+        return false;
     }
+
+    pTxDescriptor->xDataLength = 64;
+
+    if( !xNetworkInterfaceOutput(pTxDescriptor, pdTRUE) )
+    {
+        return false;
+    }
+
+    while( (ETHIRQ & _ETHIRQ_TXDONE_MASK) == 0 );
+
+    while( (ETHIRQ & _ETHIRQ_RXDONE_MASK) == 0 );
+
+    NetworkBufferDescriptor_t *pRxDescriptor = pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pBufferPA) );
+
+    return true;
 }

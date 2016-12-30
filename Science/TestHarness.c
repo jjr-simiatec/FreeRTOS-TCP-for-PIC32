@@ -94,6 +94,7 @@ static void PingAddress(void);
 static void ResetBoard(void);
 static void TestWOL(void);
 static void ToggleEthInterface(void);
+static void RunEthernetSelfTest(void);
 extern void Toggle5kHzTraffic(void);
 
 static const test_info_t s_TESTS[] = {
@@ -105,6 +106,7 @@ static const test_info_t s_TESTS[] = {
     {'6', &Toggle5kHzTraffic,    "TOGGLE 5kHz TRANSMITTER"   },
     {'7', &TestWOL,              "TEST WAKE ON LAN"          },
     {'8', &ToggleEthInterface,   "ETHERNET INTERFACE UP/DOWN"},
+    {'9', &RunEthernetSelfTest,  "ETHERNET SELF TEST"        },
     {'R', &ResetBoard,           "SOFT RESET"                }
 };
 
@@ -486,22 +488,18 @@ void TestWOL(void)
 
     vTaskSuspendAll();
 
-    portENTER_CRITICAL();
-    SYSKEY = SYSKEY_LOCK;
-    SYSKEY = SYSKEY_UNLOCK_SEQ0;
-    SYSKEY = SYSKEY_UNLOCK_SEQ1;
-    portEXIT_CRITICAL();
-
+    SYSKEY_UNLOCK_RTOS();
     OSCCONSET = _OSCCON_SLPEN_MASK;
+    SYSKEY_LOCK();
 
     while( EthernetGetInterfaceState() == ETH_WAKE_ON_LAN )
     {
         _wait();
     }
 
+    SYSKEY_UNLOCK_RTOS();
     OSCCONCLR = _OSCCON_SLPEN_MASK;
-
-    SYSKEY = SYSKEY_LOCK;
+    SYSKEY_LOCK();
 
     xTaskResumeAll();
 
@@ -526,6 +524,11 @@ void ToggleEthInterface(void)
         printf("\r\nEthernet interface is in a strange state.");
     }
 
+}
+
+void RunEthernetSelfTest(void)
+{
+    EthernetSelfTest();
 }
 
 void ResetBoard(void)

@@ -29,6 +29,7 @@
 
 #include "Ethernet.h"
 #include "LAN8740A.h"
+#include "PIC32Arch.h"
 
 // Software reset corrupts these and so they must be manually
 // set each time or TDR won't function correctly
@@ -245,7 +246,7 @@ void PHYInterruptHandler(void)
     {
         if(intSource & LAN8740_INT_WOL)
         {
-            g_interfaceState = ETH_WAKE_ON_LAN_WOKEN;
+            InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN_WOKEN, ETH_WAKE_ON_LAN);
             xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
         }
     }

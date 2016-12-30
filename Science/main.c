@@ -32,6 +32,7 @@
 #include "UART2.h"
 #include "LAN8740A.h"
 #include "TestHarness.h"
+#include "PIC32Arch.h"
 
 #define PIC32MX_MAX_FLASH_SPEED   30000000UL
 
@@ -104,8 +105,7 @@ int main(int argc, char *argv[])
 
 void HardwareConfigurePerformance(void)
 {
-    SYSKEY = SYSKEY_UNLOCK_SEQ0;
-    SYSKEY = SYSKEY_UNLOCK_SEQ1;
+    SYSKEY_UNLOCK();
 
     // Disable unused peripherals (REFCLKs not disabled due to erratum #5)
     PMD1SET = _PMD1_CVRMD_MASK;
@@ -171,7 +171,7 @@ void HardwareConfigurePerformance(void)
     PRECONbits.PFMWS = 2;   // 2 wait state
     PRECONbits.PREFEN = 3;  // Enable predictive prefetch for any address
 
-    SYSKEY = SYSKEY_LOCK;
+    SYSKEY_LOCK();
 }
 
 void HardwareUseMultiVectoredInterrupts(void)
