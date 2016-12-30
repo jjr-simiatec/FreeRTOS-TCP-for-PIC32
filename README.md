@@ -68,10 +68,12 @@ The driver consists of the following files:
 ```
 Ethernet.h
 Ethernet_ISR.S
+EthernetPrivate.h
 NetworkInterface.c
 PHY_isr.S
 PHYGeneric.c
 PHYGeneric.h
+PIC32Arch.h
 ```
 The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the following directives for correct operation:
 ```C
