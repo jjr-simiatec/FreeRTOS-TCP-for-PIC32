@@ -367,7 +367,7 @@ out the debugging messages. */
 FreeRTOS_netstat() command, and ping replies.  If ipconfigHAS_PRINTF is set to 1
 then FreeRTOS_printf should be set to the function used to print out the
 messages. */
-#define ipconfigHAS_PRINTF          0
+#define ipconfigHAS_PRINTF          1
 #if( ipconfigHAS_PRINTF == 1 )
 	#define FreeRTOS_printf(X)  vLoggingPrintf X
 #endif
@@ -377,6 +377,6 @@ messages. */
 #define ipconfigPIC32_DRV_TASK_PRIORITY     (configMAX_PRIORITIES - 2)
 #define ipconfigPIC32_DRV_TASK_STACK_SIZE   (configMINIMAL_STACK_SIZE * 2)
 #define ipconfigPIC32_ETH_INT_PRIORITY      configKERNEL_INTERRUPT_PRIORITY
-#define ipconfigPIC32_DRV_TASK_BLOCK_TIME   pdMS_TO_TICKS(10)
+#define ipconfigPIC32_DRV_TASK_BLOCK_TICKS  pdMS_TO_TICKS(5)
 
 #endif /* FREERTOS_IP_CONFIG_H */
