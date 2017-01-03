@@ -67,6 +67,7 @@ static const char * const pPHY_REG_NAMES[_countof(nVALID_PHY_REGS)] = {
 
 static const char * const pETH_STATS[] = {
     "Frames transmitted",
+    "Transmit failures",
     "Frames received",
     "Single collisions",
     "Multiple collisions",
@@ -384,15 +385,16 @@ void ViewEthernetStats(void)
         EthernetGetStats(&tStats);
 
         printf(pETH_STATS_FMT, 3, tStats.framesTransmitted);
-        printf(pETH_STATS_FMT, 4, tStats.framesReceived);
-        printf(pETH_STATS_FMT, 5, tStats.singleCollisions);
-        printf(pETH_STATS_FMT, 6, tStats.multipleCollisions);
-        printf(pETH_STATS_FMT, 7, tStats.alignmentErrors);
-        printf(pETH_STATS_FMT, 8, tStats.fcsErrors);
-        printf(pETH_STATS_FMT, 9, tStats.receiveOverflows);
-        printf(pETH_STATS_FMT, 10, tStats.rxNoBuffers);
-        printf(pETH_STATS_FMT, 11, tStats.txNoDMADescriptors);
-        printf(pETH_STATS_FMT, 12, tStats.linkFailures);
+        printf(pETH_STATS_FMT, 4, tStats.txFailures);
+        printf(pETH_STATS_FMT, 5, tStats.framesReceived);
+        printf(pETH_STATS_FMT, 6, tStats.singleCollisions);
+        printf(pETH_STATS_FMT, 7, tStats.multipleCollisions);
+        printf(pETH_STATS_FMT, 8, tStats.alignmentErrors);
+        printf(pETH_STATS_FMT, 9, tStats.fcsErrors);
+        printf(pETH_STATS_FMT, 10, tStats.receiveOverflows);
+        printf(pETH_STATS_FMT, 11, tStats.rxNoBuffers);
+        printf(pETH_STATS_FMT, 12, tStats.txNoDMADescriptors);
+        printf(pETH_STATS_FMT, 13, tStats.linkFailures);
 
         c = WaitForAKeyPress(0);
 
@@ -528,7 +530,13 @@ void ToggleEthInterface(void)
 
 void RunEthernetSelfTest(void)
 {
-    EthernetSelfTest();
+    EthernetSelfTest(g_hTask1);
+
+    uint32_t nTestResult;
+    if( xTaskNotifyWait(0, 0, &nTestResult, pdMS_TO_TICKS(1000)) )
+        printf("\r\nTest result is %s", nTestResult ? "PASS" : "FAIL");
+    else
+        printf("\r\nTest timed out!");
 }
 
 void ResetBoard(void)

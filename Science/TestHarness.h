@@ -23,6 +23,8 @@
 
 #define TEST_BUFFER_SIZE    255
 
+#define _countof(x)         (sizeof(x) / sizeof(x[0]))
+
 extern uint8_t *g_pTestBuffer;
 
 extern TaskHandle_t g_hTask1;
