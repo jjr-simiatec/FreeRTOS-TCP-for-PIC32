@@ -29,6 +29,7 @@ typedef enum {
 
 typedef struct {
     uint32_t framesTransmitted;
+    uint32_t txFailures;
     uint32_t framesReceived;
     uint32_t singleCollisions;
     uint32_t multipleCollisions;
@@ -46,6 +47,6 @@ extern eth_interface_state_t EthernetGetInterfaceState(void);
 extern bool EthernetPrepareWakeOnLAN(void);
 extern void EthernetInterfaceUp(void);
 extern void EthernetInterfaceDown(void);
-extern void EthernetSelfTest(void);
+extern void EthernetSelfTest(TaskHandle_t hNotify);
 
 #endif // PIC32_ETHERNET_H

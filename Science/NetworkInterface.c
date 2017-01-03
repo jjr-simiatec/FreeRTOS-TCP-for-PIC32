@@ -60,7 +60,6 @@
 #define ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ    2500000UL
 #endif // ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ
 
-
 #if defined(__PIC32MX__)
 
 #if defined(ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ)
@@ -76,7 +75,6 @@
 #endif // ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ
 
 #endif
-
 
 #if defined(__PIC32MZ__)
 void __attribute__(( interrupt(IPL0AUTO), vector(_ETHERNET_VECTOR) )) EthernetInterruptWrapper(void);
@@ -100,6 +98,8 @@ static const uint8_t pMIIM_CLOCK_DIVIDERS[] = {
 
 #define NET_BUFFER_SIZE (ipTOTAL_ETHERNET_FRAME_SIZE + ipBUFFER_PADDING)
 #define NET_BUFFER_SIZE_ROUNDED_UP ((NET_BUFFER_SIZE + 3) & ~0x03UL)
+#define SELF_TEST_RETRY_COUNT   (5)
+
 static uint8_t s_tNetworkBuffers[ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS][NET_BUFFER_SIZE_ROUNDED_UP] __attribute((aligned(4), coherent));
 
 static eth_dma_descriptor_t s_tTxDMADescriptors[ipconfigPIC32_TX_DMA_DESCRIPTORS] __attribute__((coherent));
@@ -110,6 +110,7 @@ static eth_dma_descriptor_t *s_pCurrentTxDMADescKVA;
 static eth_dma_descriptor_t *s_pPendingTxDMADescKVA;
 
 static eth_stats_t s_tStats;
+static TaskHandle_t s_hTaskWaitingForTestResult = NULL;
 
 static TaskHandle_t s_hEthernetTask = NULL;
 static SemaphoreHandle_t s_hTxDMABufCountSemaphore = NULL;
@@ -126,6 +127,14 @@ static void InitialiseDMADescriptorLists(void);
 static void InitiateWOLandWait(void);
 static void PowerdownEthernet(void);
 static bool ExecuteSelfTests(void);
+
+#define TEST_IF_TRUE_WITH_RETRY(test, retry) ({ \
+    uint8_t count = (retry); bool result = false; \
+    while( count-- && !(result = ((test) != 0)) ) { \
+        vTaskDelay(1); \
+    } \
+    result; \
+}) \
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -166,7 +175,7 @@ portTASK_FUNCTION(EthernetTask, pParams)
                     SwapPacketBuffers(pStackRxDescriptor, pRxDescriptor);
 
                     // The Rx buffer also contains the Frame Check Sequence which is not needed
-                    pStackRxDescriptor->xDataLength = s_pCurrentRxDMADescKVA->hdr.Count - 4;
+                    pStackRxDescriptor->xDataLength = s_pCurrentRxDMADescKVA->hdr.Count - FCS_LENGTH;
                     pStackRxDescriptor->pxNextBuffer = NULL;
 
                     s_pCurrentRxDMADescKVA->pBufferPA = (uint8_t *) KVA_TO_PA(pRxDescriptor->pucEthernetBuffer);
@@ -219,6 +228,11 @@ portTASK_FUNCTION(EthernetTask, pParams)
 
             while( s_pPendingTxDMADescKVA->pBufferPA && ((s_pPendingTxDMADescKVA->hdr.control & ETH_DESC_EOWN) == 0) )
             {
+                if( (s_pPendingTxDMADescKVA->statusVectorLow & ETH_TSVL_TRANSMIT_DONE) == 0 )
+                {
+                    s_tStats.txFailures++;
+                }
+
                 uint8_t *pBuffer = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pBufferPA);
 
                 s_pPendingTxDMADescKVA->pBufferPA = NULL;
@@ -293,7 +307,7 @@ void ControllerInitialise(void)
     EMAC1MCFGCLR = _EMAC1MCFG_RESETMGMT_MASK;
 
     uint32_t c;
-    for(c = 0; c < _countof(pMIIM_CLOCK_DIVIDERS); c++)
+    for(c = 0; c < ARRAY_SIZE(pMIIM_CLOCK_DIVIDERS); c++)
     {
         if((ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ / pMIIM_CLOCK_DIVIDERS[c]) <= ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ)
         {
@@ -356,27 +370,30 @@ BaseType_t xNetworkInterfaceInitialise(void)
 
     do
     {
-        BaseType_t state = g_interfaceState;
-
-        if(state != ETH_NORMAL)
+        switch(g_interfaceState)
         {
-            switch(state)
+        case ETH_POWER_DOWN:
+            PowerdownEthernet();
+            InterlockedCompareExchange(&g_interfaceState, ETH_NORMAL, ETH_POWER_DOWN);
+            break;
+
+        case ETH_WAKE_ON_LAN:
+            InitiateWOLandWait();
+            InterlockedCompareExchange(&g_interfaceState, ETH_NORMAL, ETH_WAKE_ON_LAN_WOKEN);
+            break;
+
+        case ETH_SELF_TEST:
             {
-            case ETH_POWER_DOWN:
-                PowerdownEthernet();
-                break;
+                TaskHandle_t hTask = s_hTaskWaitingForTestResult;
+                s_hTaskWaitingForTestResult = NULL;
 
-            case ETH_WAKE_ON_LAN:
-                InitiateWOLandWait();
-                state = ETH_WAKE_ON_LAN_WOKEN;
-                break;
+                if( hTask )
+                    xTaskNotify(hTask, ExecuteSelfTests() ? 1 : 0, eSetValueWithOverwrite);
 
-            case ETH_SELF_TEST:
-                ExecuteSelfTests();
-                break;
+                InterlockedCompareExchange(&g_interfaceState, ETH_NORMAL, ETH_SELF_TEST);
             }
 
-            InterlockedCompareExchange(&g_interfaceState, ETH_NORMAL, state);
+            break;
         }
 
         ControllerInitialise();
@@ -598,12 +615,14 @@ void EthernetInterfaceUp(void)
     }
 }
 
-void EthernetSelfTest(void)
+void EthernetSelfTest(TaskHandle_t hNotify)
 {
     if( InterlockedCompareExchange(&g_interfaceState, ETH_SELF_TEST, ETH_NORMAL) != ETH_NORMAL )
     {
         return;
     }
+
+    s_hTaskWaitingForTestResult = hNotify;
 
     if( FreeRTOS_IsNetworkUp() )
         FreeRTOS_NetworkDown();
@@ -625,8 +644,17 @@ bool ExecuteSelfTests(void)
 {
     ControllerInitialise();
 
+    // Fix PHY and MAC to operate at 100Mbps full duplex and put the loopback at the PHY
     PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
+
+#if 0
     while( PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
+#else
+    if( !TEST_IF_TRUE_WITH_RETRY( (PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET) == 0, SELF_TEST_RETRY_COUNT ) )
+    {
+        return false;
+    }
+#endif
 
     PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
 
@@ -637,7 +665,6 @@ bool ExecuteSelfTests(void)
 
     ETHRXFC = _ETHRXFC_BCEN_MASK | _ETHRXFC_MCEN_MASK | _ETHRXFC_NOTMEEN_MASK | _ETHRXFC_UCEN_MASK | _ETHRXFC_CRCOKEN_MASK;
 
-    ETHIENSET = _ETHIEN_RXDONEIE_MASK | _ETHIEN_TXDONEIE_MASK;
     ETHCON1SET = _ETHCON1_RXEN_MASK;
 
     NetworkBufferDescriptor_t *pTxDescriptor = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, 0);
@@ -647,18 +674,63 @@ bool ExecuteSelfTests(void)
         return false;
     }
 
-    pTxDescriptor->xDataLength = 64;
+    pTxDescriptor->xDataLength = ipconfigNETWORK_MTU + sizeof(EthernetHeader_t);
 
+    EthernetHeader_t *pTxHeader = (EthernetHeader_t *) pTxDescriptor->pucEthernetBuffer;
+    memset(pTxHeader, 0xFF, sizeof(*pTxHeader));
+    pTxHeader->usFrameType = FreeRTOS_htons(ipconfigNETWORK_MTU);
+
+    uint8_t *pTxData = (uint8_t *) (pTxHeader + 1);
+
+    uint16_t c;
+    for(c = 0; c < ipconfigNETWORK_MTU; c++)
+    {
+        *pTxData++ = ipconfigRAND32();
+    }
+
+    // Start transmission
     if( !xNetworkInterfaceOutput(pTxDescriptor, pdTRUE) )
     {
         return false;
     }
 
-    while( (ETHIRQ & _ETHIRQ_TXDONE_MASK) == 0 );
+    // Wait until Tx operation completes
+    if( !TEST_IF_TRUE_WITH_RETRY((ETHCON1 & _ETHCON1_TXRTS_MASK) == 0, SELF_TEST_RETRY_COUNT) )
+    {
+        return false;
+    }
 
-    while( (ETHIRQ & _ETHIRQ_RXDONE_MASK) == 0 );
+    // Check transmit successful
+    if( (s_pPendingTxDMADescKVA->statusVectorLow & ETH_TSVL_TRANSMIT_DONE) == 0 )
+    {
+        return false;
+    }
 
-    NetworkBufferDescriptor_t *pRxDescriptor = pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pBufferPA) );
+    // Wait for packet reception
+    if( !TEST_IF_TRUE_WITH_RETRY(ETHIRQ & _ETHIRQ_RXDONE_MASK, SELF_TEST_RETRY_COUNT) )
+    {
+        return false;
+    }
+
+    // Check packet received ok
+    if( ((s_pCurrentRxDMADescKVA->statusVectorLow & ETH_RSVL_RX_OK) == 0)
+        || (s_pPendingTxDMADescKVA->hdr.Count != (s_pCurrentRxDMADescKVA->hdr.Count - FCS_LENGTH)) )
+    {
+        return false;
+    }
+
+    // Compare data received with what was allegedly transmitted
+    const NetworkBufferDescriptor_t *pRxDescriptor = pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pBufferPA) );
+
+    const uint8_t *pRxData = pRxDescriptor->pucEthernetBuffer;
+
+    for(c = 0, pTxData = pTxDescriptor->pucEthernetBuffer; c < s_pPendingTxDMADescKVA->hdr.Count; c++)
+    {
+        if( *pRxData++ != *pTxData++ )
+        {
+            return false;
+        }
+    }
 
     return true;
 }

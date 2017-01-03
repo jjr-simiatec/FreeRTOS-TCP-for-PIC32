@@ -19,6 +19,8 @@
 #ifndef PIC32_ETHERNET_PRIVATE_H
 #define PIC32_ETHERNET_PRIVATE_H
 
+#define FCS_LENGTH  (4U)
+
 typedef enum {
     ETH_DESC_EOWN = 1UL << 7,
     ETH_DESC_NPV = 1UL << 8,

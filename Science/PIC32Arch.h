@@ -35,19 +35,20 @@
 #define SYSKEY_LOCK() \
     SYSKEY = 0; \
 
-#define _countof(x)         (sizeof(x) / sizeof(x[0]))
-
 #define InterlockedCompareExchange(destination, exchange, comparand) __extension__({ \
     volatile BaseType_t *d = destination; \
     BaseType_t e = exchange, c = comparand, val = 0; \
-    asm volatile("1:  ll    $t0, %0\n" \
-                 "    move  %1, $t0\n" \
+    asm volatile(".set noreorder\n" \
+                 "1:  ll    $t0, %0\n" \
                  "    bne   $t0, %2, 2f\n" \
+                 "    move  %1, $t0\n" \
                  "    move  $t0, %3\n" \
                  "    sc    $t0, %0\n" \
                  "    beq   $t0, $zero, 1b\n" \
+                 "    nop\n" \
                  "2:  \n" \
-                 : "+m"(*d), "+r"(val) \
+                 ".set reorder" \
+                 : "+m"(*d), "=r"(val) \
                  : "r"(c), "r"(e) \
                  : "t0"); \
     val; \
