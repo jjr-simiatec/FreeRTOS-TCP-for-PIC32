@@ -27,6 +27,7 @@
 #include <FreeRTOS_IP_Private.h>
 // C Runtime
 #include <stdio.h>
+#include <stdbool.h>
 
 #define PACKET_TIMER_HZ (5000U)
 #define BYPASS_TCPIP_STACK
@@ -43,34 +44,28 @@
 void __attribute__((interrupt(IPL0AUTO), vector(_TIMER_3_VECTOR))) vT3InterruptWrapper(void);
 
 static TaskHandle_t s_hPacketTask = NULL;
+#define DESTINATION_ADDR FreeRTOS_inet_addr_quick(224, 1, 2, 3)
+//#define DESTINATION_ADDR FreeRTOS_inet_addr_quick(10, 10, 10, 11)
+#define SOURCE_PORT FreeRTOS_htons(8111)
+#define DESTINATION_PORT FreeRTOS_htons(12345)
 
-#if defined(BYPASS_TCPIP_STACK)
+#define PAYLOAD_SIZE    8U
 
-static const uint8_t pUDP_PACKET_DEFAULTS[] = {
-    // Ethernet II Header
-    0x01, 0x00, 0x5E, 0x01, 0x02, 0x03, // xDestinationAddress
-    0xD8, 0x80, 0x39, 0x75, 0xAF, 0x8B, // xSourceAddress
-    0x08, 0x00,                         // usFrameType
-    // IP Header
-    0x45,                   // ucVersionHeaderLength
-    0x00,                   // ucDifferentiatedServicesCode
-    0x00, 0x24,             // usLength
-    0x00, 0x00,             // usIdentification
-    0x00, 0x00,             // usFragmentOffset
-    0x80,                   // ucTimeToLive
-    0x11,                   // ucProtocol
-    0x44, 0xb1,             // usHeaderChecksum
-    0x0a, 0x0a, 0x0a, 0x0a, // ulSourceIPAddress
-//  0xe0, 0x01, 0x02, 0x03, // ulDestinationIPAddress
-    0x0a, 0x0a, 0x0a, 0x0b, // ulDestinationIPAddress
-    // UDP Header
-    0x1f, 0xaf, // usSourcePort
-    0x30, 0x39, // usDestinationPort
-    0x00, 0x10, // usLength
-    0x00, 0x00  // usChecksum
-};
+static inline bool MulticastMACFromIPv4Addr(uint32_t ipv4addr, MACAddress_t *pMAC)
+{
+    // Is this a multicast address?
+    if((ipv4addr & 0x000000F0) != 0x000000E0)
+    {
+        return false;
+    }
 
-#endif // BYPASS_TCPIP_STACK
+    pMAC->ucBytes[0] = 0x01; pMAC->ucBytes[1] = 0x00; pMAC->ucBytes[2] = 0x5E;
+    pMAC->ucBytes[3] = (ipv4addr >> 8) & 0x7F;
+    pMAC->ucBytes[4] = (ipv4addr >> 16) & 0xFF;
+    pMAC->ucBytes[5] = ipv4addr >> 24;
+
+    return true;
+}
 
 void vT3InterruptHandler(void)
 {
@@ -118,6 +113,7 @@ portTASK_FUNCTION(PacketTask, pParams)
     // Wait for the link to come up
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
+#if !defined(BYPASS_TCPIP_STACK)
     Socket_t tTxSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
 
     configASSERT(tTxSocket != FREERTOS_INVALID_SOCKET);
@@ -126,7 +122,7 @@ portTASK_FUNCTION(PacketTask, pParams)
     memset(&tSockAddr, 0, sizeof(tSockAddr));
 
     tSockAddr.sin_family = FREERTOS_AF_INET;
-    tSockAddr.sin_port = FreeRTOS_htons(8111);
+    tSockAddr.sin_port = SOURCE_PORT;
 
     BaseType_t result = FreeRTOS_bind(tTxSocket, &tSockAddr, sizeof(tSockAddr));
 
@@ -136,9 +132,9 @@ portTASK_FUNCTION(PacketTask, pParams)
     memset(&tDestAddr, 0, sizeof(tDestAddr));
 
     tDestAddr.sin_family = FREERTOS_AF_INET;
-//    tDestAddr.sin_addr = FreeRTOS_inet_addr_quick(224, 1, 2, 3);
-    tDestAddr.sin_addr = FreeRTOS_inet_addr_quick(10, 10, 10, 11);
-    tDestAddr.sin_port = FreeRTOS_htons(12345);
+    tDestAddr.sin_addr = DESTINATION_ADDR;
+    tDestAddr.sin_port = DESTINATION_PORT;
+#endif // BYPASS_TCPIP_STACK
 
     for( ; ; )
     {
@@ -151,13 +147,25 @@ portTASK_FUNCTION(PacketTask, pParams)
         if( pUdpBuffer )
         {
             UDPPacket_t *pPacket = (UDPPacket_t *) pUdpBuffer->pucEthernetBuffer;
-            memcpy(pPacket, pUDP_PACKET_DEFAULTS, sizeof(*pPacket));
 
+            MulticastMACFromIPv4Addr(DESTINATION_ADDR, &pPacket->xEthernetHeader.xDestinationAddress);
+            memcpy( &pPacket->xEthernetHeader.xSourceAddress, &xDefaultPartUDPPacketHeader, sizeof(xDefaultPartUDPPacketHeader) );
+
+            // IP header
+            pPacket->xIPHeader.usLength = FreeRTOS_htons( sizeof(pPacket->xIPHeader) + sizeof(pPacket->xUDPHeader) + PAYLOAD_SIZE );
+            pPacket->xIPHeader.ulDestinationIPAddress = DESTINATION_ADDR;
             pPacket->xIPHeader.usHeaderChecksum = 0;
-            pPacket->xIPHeader.usHeaderChecksum = usGenerateChecksum(0UL, (uint8_t *) &pPacket->xIPHeader, ipSIZE_OF_IPv4_HEADER);
+
+            pPacket->xIPHeader.usHeaderChecksum = usGenerateChecksum(0UL, (uint8_t *) &pPacket->xIPHeader, sizeof(pPacket->xIPHeader));
             pPacket->xIPHeader.usHeaderChecksum = ~FreeRTOS_htons(pPacket->xIPHeader.usHeaderChecksum);
 
-            pUdpBuffer->xDataLength = sizeof(UDPPacket_t) + 8;
+            // UDP header
+            pPacket->xUDPHeader.usSourcePort = SOURCE_PORT;
+            pPacket->xUDPHeader.usDestinationPort = DESTINATION_PORT;
+            pPacket->xUDPHeader.usLength = FreeRTOS_htons( sizeof(pPacket->xUDPHeader) + PAYLOAD_SIZE );
+            pPacket->xUDPHeader.usChecksum = 0;
+
+            pUdpBuffer->xDataLength = sizeof(*pPacket) + PAYLOAD_SIZE;
         }
 #else
         uint8_t *pUdpBuffer = FreeRTOS_GetUDPPayloadBuffer(128, 0);
@@ -204,7 +212,7 @@ portTASK_FUNCTION(PacketTask, pParams)
     memset(&tSockAddr, 0, sizeof(tSockAddr));
 
     tSockAddr.sin_family = FREERTOS_AF_INET;
-    tSockAddr.sin_port = FreeRTOS_htons(12345);
+    tSockAddr.sin_port = DESTINATION_PORT;
 
     BaseType_t result = FreeRTOS_bind(tRxSocket, &tSockAddr, sizeof(tSockAddr));
 
