@@ -29,7 +29,7 @@
 #define mainRAM_DISK_SECTOR_SIZE    512UL
 
 #if defined(__PIC32MX__)
-#define mainRAM_DISK_SECTORS    ((32UL * 1024UL) / mainRAM_DISK_SECTOR_SIZE)
+#define mainRAM_DISK_SECTORS    ((30UL * 1024UL) / mainRAM_DISK_SECTOR_SIZE)
 static const char pBOARD_NAME[] = "pic32mx";
 #elif defined(__PIC32MZ__)
 #define mainRAM_DISK_SECTORS    ((64UL * 1024UL) / mainRAM_DISK_SECTOR_SIZE)
@@ -44,7 +44,9 @@ static const struct xSERVER_CONFIG xServerConfiguration[] =
 {
     // Server type,  port number, backlog, root dir.
     {  eSERVER_HTTP, 80,          12,      configHTTP_ROOT },
-    {  eSERVER_FTP,  21,          12,      ""              }
+#if (ipconfigUSE_FTP == 1)
+    {  eSERVER_FTP,  21,          12,      ""              },
+#endif
 };
 
 static uint8_t ucRAMDisk[mainRAM_DISK_SECTORS * mainRAM_DISK_SECTOR_SIZE];

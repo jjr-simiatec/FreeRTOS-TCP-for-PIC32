@@ -50,6 +50,11 @@ void PHYInitialise(void)
     PHYWrite(DP83848_REG_INTERRUPT_STATUS, DP83848_MISR_ENABLE_AUTO_NEG_COMPLETE_INT | DP83848_MISR_ENABLE_LINK_CHANGE_INT);
 }
 
+void PHYDisableInterrupt(void)
+{
+    IEC0CLR = _IEC0_INT3IE_MASK;
+}
+
 void PHYGetStatus(phy_status_t *pStatus)
 {
     uint16_t linkStat = PHYRead(DP83848_REG_PHY_STATUS);

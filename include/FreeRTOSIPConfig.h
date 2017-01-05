@@ -223,7 +223,11 @@ not set to 1 then only FreeRTOS_indet_addr_quick() is available. */
 are available to the IP stack.  The total number of network buffers is limited
 to ensure the total amount of RAM that can be consumed by the IP stack is capped
 to a pre-determinable value. */
+#if defined(__PIC32MX__)
+#define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS  15
+#else
 #define ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS  40
+#endif
 
 /* Optimisation that allows more than one Rx buffer to be passed to the TCP task
 at a time - requires driver support. */
@@ -334,10 +338,19 @@ when ipconfigDHCP_USES_USER_HOOK is set to 1. */
 #define ipconfigUSE_DHCP_HOOK                   ( 0 )
 
 /* Include both TCP and HTTP. */
-#define ipconfigUSE_FTP                         1
 #define ipconfigUSE_HTTP                        1
 
 /* Dimension the buffers and windows used by the FTP and HTTP servers. */
+#if defined(__PIC32MX__)
+#define ipconfigUSE_FTP                         0
+
+#define ipconfigHTTP_TX_BUFSIZE                 ( 1 * ipconfigTCP_MSS )
+#define ipconfigHTTP_TX_WINSIZE                 ( 1 )
+#define ipconfigHTTP_RX_BUFSIZE                 ( 1 * ipconfigTCP_MSS )
+#define ipconfigHTTP_RX_WINSIZE                 ( 1 )
+#else
+#define ipconfigUSE_FTP                         1
+
 #define ipconfigFTP_TX_BUFSIZE                  ( 4 * ipconfigTCP_MSS )
 #define ipconfigFTP_TX_WINSIZE                  ( 2 )
 #define ipconfigFTP_RX_BUFSIZE                  ( 8 * ipconfigTCP_MSS )
@@ -346,6 +359,7 @@ when ipconfigDHCP_USES_USER_HOOK is set to 1. */
 #define ipconfigHTTP_TX_WINSIZE                 ( 2 )
 #define ipconfigHTTP_RX_BUFSIZE                 ( 4 * ipconfigTCP_MSS )
 #define ipconfigHTTP_RX_WINSIZE                 ( 4 )
+#endif
 
 /* Prototype for the function used to print out.  In this case it prints to the
 console before the network is connected then a UDP port after the network has
@@ -372,8 +386,14 @@ messages. */
 	#define FreeRTOS_printf(X)  vLoggingPrintf X
 #endif
 
+#if defined(__PIC32MX__)
+#define ipconfigPIC32_TX_DMA_DESCRIPTORS    5
+#define ipconfigPIC32_RX_DMA_DESCRIPTORS    5
+#else
 #define ipconfigPIC32_TX_DMA_DESCRIPTORS    10
 #define ipconfigPIC32_RX_DMA_DESCRIPTORS    20
+#endif
+
 #define ipconfigPIC32_DRV_TASK_PRIORITY     (configMAX_PRIORITIES - 2)
 #define ipconfigPIC32_DRV_TASK_STACK_SIZE   (configMINIMAL_STACK_SIZE * 2)
 #define ipconfigPIC32_ETH_INT_PRIORITY      configKERNEL_INTERRUPT_PRIORITY

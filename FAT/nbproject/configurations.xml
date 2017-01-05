@@ -82,6 +82,8 @@
           <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
+        <subordinates>
+        </subordinates>
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
@@ -442,6 +444,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0027_CORE_UNIMPLEMENTED_EDSACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0028_TBLRD_WORM_CONFIG_MEMORY"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0029_TBLRD_DEVICE_ID" value="report"/>
         <property key="warningmessagebreakoptions.W0031_BSLIM_INSUFFICIENT_BOOT_SEGMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0032_BSLIM_LIMITS_EXCEEDS_PROG_MEMORY"
@@ -465,6 +470,10 @@
         <property key="warningmessagebreakoptions.W0107_SIM_NOT_SUPPORTED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0108_SIM_RESERVED_SETTING"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -546,6 +555,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0242_ADC_BG_INT_BEFORE_PWR"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
+        <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
@@ -571,6 +583,12 @@
         <property key="warningmessagebreakoptions.W1600_PPS_INVALID_MAP" value="report"/>
         <property key="warningmessagebreakoptions.W1601_PPS_INVALID_PIN_DESCRIPTION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W1800_PWM_TIMER_SELECTION_NOT_AVIALABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1801_PWM_TIMER_SELECTION_BAD_CLOCK_INPUT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1802_PWM_TIMER_MISSING_PERSCALER_INFO"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W2001_INPUTCAPTURE_TMR3_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W2002_INPUTCAPTURE_CAPTURE_EMPTY"
@@ -590,6 +608,8 @@
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7003_SMT_WIN_SELECTION_NOT_SUPPORT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W8001_OSC_INVALID_CLOCK_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9001_TMR_GATE_AND_EXTCLOCK_ENABLED"
                   value="report"/>
@@ -619,6 +639,10 @@
         <property key="warningmessagebreakoptions.W9604_COMP_SLOPE_SOURCE_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9605_COMP_PRG_SOURCE_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9607_COMP_DGTL_FLTR_OPTION_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9609_COMP_DGTL_FLTR_CLK_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9801_FVR_INVALID_MODE_SELECTION"
                   value="report"/>
@@ -660,6 +684,8 @@
           <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
+        <subordinates>
+        </subordinates>
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
@@ -1020,6 +1046,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0027_CORE_UNIMPLEMENTED_EDSACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0028_TBLRD_WORM_CONFIG_MEMORY"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0029_TBLRD_DEVICE_ID" value="report"/>
         <property key="warningmessagebreakoptions.W0031_BSLIM_INSUFFICIENT_BOOT_SEGMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0032_BSLIM_LIMITS_EXCEEDS_PROG_MEMORY"
@@ -1043,6 +1072,10 @@
         <property key="warningmessagebreakoptions.W0107_SIM_NOT_SUPPORTED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0108_SIM_RESERVED_SETTING"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -1124,6 +1157,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0242_ADC_BG_INT_BEFORE_PWR"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
+        <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
@@ -1149,6 +1185,12 @@
         <property key="warningmessagebreakoptions.W1600_PPS_INVALID_MAP" value="report"/>
         <property key="warningmessagebreakoptions.W1601_PPS_INVALID_PIN_DESCRIPTION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W1800_PWM_TIMER_SELECTION_NOT_AVIALABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1801_PWM_TIMER_SELECTION_BAD_CLOCK_INPUT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1802_PWM_TIMER_MISSING_PERSCALER_INFO"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W2001_INPUTCAPTURE_TMR3_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W2002_INPUTCAPTURE_CAPTURE_EMPTY"
@@ -1168,6 +1210,8 @@
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7003_SMT_WIN_SELECTION_NOT_SUPPORT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W8001_OSC_INVALID_CLOCK_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9001_TMR_GATE_AND_EXTCLOCK_ENABLED"
                   value="report"/>
@@ -1197,6 +1241,10 @@
         <property key="warningmessagebreakoptions.W9604_COMP_SLOPE_SOURCE_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9605_COMP_PRG_SOURCE_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9607_COMP_DGTL_FLTR_OPTION_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9609_COMP_DGTL_FLTR_CLK_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9801_FVR_INVALID_MODE_SELECTION"
                   value="report"/>
@@ -1238,6 +1286,8 @@
           <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
+        <subordinates>
+        </subordinates>
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
@@ -1304,6 +1354,7 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
+        <appendMe value="-fno-short-double"/>
       </C32>
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>
@@ -1515,6 +1566,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0027_CORE_UNIMPLEMENTED_EDSACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0028_TBLRD_WORM_CONFIG_MEMORY"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0029_TBLRD_DEVICE_ID" value="report"/>
         <property key="warningmessagebreakoptions.W0031_BSLIM_INSUFFICIENT_BOOT_SEGMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0032_BSLIM_LIMITS_EXCEEDS_PROG_MEMORY"
@@ -1538,6 +1592,10 @@
         <property key="warningmessagebreakoptions.W0107_SIM_NOT_SUPPORTED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0108_SIM_RESERVED_SETTING"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -1619,6 +1677,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0242_ADC_BG_INT_BEFORE_PWR"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
+        <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
@@ -1644,6 +1705,12 @@
         <property key="warningmessagebreakoptions.W1600_PPS_INVALID_MAP" value="report"/>
         <property key="warningmessagebreakoptions.W1601_PPS_INVALID_PIN_DESCRIPTION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W1800_PWM_TIMER_SELECTION_NOT_AVIALABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1801_PWM_TIMER_SELECTION_BAD_CLOCK_INPUT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1802_PWM_TIMER_MISSING_PERSCALER_INFO"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W2001_INPUTCAPTURE_TMR3_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W2002_INPUTCAPTURE_CAPTURE_EMPTY"
@@ -1663,6 +1730,8 @@
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7003_SMT_WIN_SELECTION_NOT_SUPPORT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W8001_OSC_INVALID_CLOCK_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9001_TMR_GATE_AND_EXTCLOCK_ENABLED"
                   value="report"/>
@@ -1692,6 +1761,10 @@
         <property key="warningmessagebreakoptions.W9604_COMP_SLOPE_SOURCE_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9605_COMP_PRG_SOURCE_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9607_COMP_DGTL_FLTR_OPTION_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9609_COMP_DGTL_FLTR_CLK_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9801_FVR_INVALID_MODE_SELECTION"
                   value="report"/>
