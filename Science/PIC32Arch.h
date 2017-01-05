@@ -19,6 +19,10 @@
 #ifndef PIC32_ARCH_H
 #define PIC32_ARCH_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #define SYSKEY_UNLOCK_SEQ0  0xAA996655UL
 #define SYSKEY_UNLOCK_SEQ1  0x556699AAUL
 
@@ -53,5 +57,9 @@
                  : "t0"); \
     val; \
 })
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif // PIC32_ATCH_H

@@ -19,6 +19,10 @@
 #ifndef PIC32_ETHERNET_H
 #define PIC32_ETHERNET_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     ETH_NORMAL,
     ETH_WAKE_ON_LAN,
@@ -48,5 +52,9 @@ extern bool EthernetPrepareWakeOnLAN(void);
 extern void EthernetInterfaceUp(void);
 extern void EthernetInterfaceDown(void);
 extern void EthernetSelfTest(TaskHandle_t hNotify);
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif // PIC32_ETHERNET_H

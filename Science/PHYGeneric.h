@@ -20,8 +20,7 @@
 #define	PHYGENERIC_H
 
 #ifdef	__cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 typedef enum {
@@ -169,6 +168,7 @@ extern SemaphoreHandle_t g_hLinkUpSemaphore;
 extern void PHYInitialise(void);
 extern bool PHYSupportsWOL(void);
 extern void PHYPrepareWakeOnLAN(void);
+extern void PHYDisableInterrupt(void);
 extern uint16_t PHYRead(uint8_t reg);
 extern void PHYWrite(uint8_t reg, uint16_t val);
 extern inline uint16_t PHY_MMDRead(uint8_t devad, uint16_t reg);

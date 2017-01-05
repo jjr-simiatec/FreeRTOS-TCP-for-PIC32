@@ -19,6 +19,10 @@
 #ifndef PIC32_ETHERNET_PRIVATE_H
 #define PIC32_ETHERNET_PRIVATE_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #define FCS_LENGTH  (4U)
 
 typedef enum {
@@ -114,5 +118,11 @@ typedef struct __attribute__((packed, aligned(4))) {
     volatile uint32_t statusVectorLow;
     struct eth_dma_descriptor_t *pNextDescriptorPA;
 } eth_dma_descriptor_t;
+
+extern TaskHandle_t g_hEthernetTask;
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif // PIC32_ETHERNET_PRIVATE_H

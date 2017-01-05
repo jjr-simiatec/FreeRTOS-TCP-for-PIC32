@@ -79,6 +79,11 @@ void PHYInitialise(void)
     PHYWrite(LAN8740_REG_INTERRUPT_MASK, LAN8740_INT_AUTO_NEG_COMPLETE | LAN8740_INT_LINK_DOWN);
 }
 
+void PHYDisableInterrupt(void)
+{
+    IEC0CLR = _IEC0_INT4IE_MASK;
+}
+
 void PHYGetStatus(phy_status_t *pStatus)
 {
     uint16_t linkStat = PHYRead(LAN8740_REG_PHY_SPECIAL_CONTROL_STATUS);

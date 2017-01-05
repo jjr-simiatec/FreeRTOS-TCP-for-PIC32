@@ -112,7 +112,7 @@ static eth_dma_descriptor_t *s_pPendingTxDMADescKVA;
 static eth_stats_t s_tStats;
 static TaskHandle_t s_hTaskWaitingForTestResult = NULL;
 
-static TaskHandle_t s_hEthernetTask = NULL;
+TaskHandle_t g_hEthernetTask = NULL;
 static SemaphoreHandle_t s_hTxDMABufCountSemaphore = NULL;
 static SemaphoreHandle_t s_hTxDMABufMutex = NULL;
 
@@ -268,7 +268,7 @@ void EthernetInterruptHandler(void)
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
 
-    xTaskNotifyFromISR(s_hEthernetTask, irqs, eSetBits, &bHigherPriorityTaskWoken);
+    xTaskNotifyFromISR(g_hEthernetTask, irqs, eSetBits, &bHigherPriorityTaskWoken);
 
     CLEAR_INTERRUPT_FLAG();
 
@@ -278,10 +278,7 @@ void EthernetInterruptHandler(void)
 void ControllerInitialise(void)
 {
     // Procedure taken from Microchip document ref. 61155C, section 35.4.10
-    DISABLE_INTERRUPT();
-
     ETHCON1CLR = _ETHCON1_ON_MASK | _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
-
     while( ETHSTATbits.ETHBUSY );
 
     CLEAR_INTERRUPT_FLAG();
@@ -346,7 +343,7 @@ void MACConfigure(phy_speed_t speed, bool fullDuplex)
 
 BaseType_t xNetworkInterfaceInitialise(void)
 {
-    if( !s_hEthernetTask )
+    if( !g_hEthernetTask )
     {
         // First time through
         g_hLinkUpSemaphore = xSemaphoreCreateBinary();
@@ -358,11 +355,20 @@ BaseType_t xNetworkInterfaceInitialise(void)
         memset(s_tTxDMADescriptors, 0, sizeof(s_tTxDMADescriptors));
         memset(s_tRxDMADescriptors, 0, sizeof(s_tRxDMADescriptors));
 
-        xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &s_hEthernetTask);
-        configASSERT(s_hEthernetTask);
+        xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &g_hEthernetTask);
+        configASSERT(g_hEthernetTask);
+
+        if(g_interfaceState != ETH_NORMAL)
+        {
+            // Need to talk to PHY
+            ControllerInitialise();
+        }
     }
     else
     {
+        DISABLE_INTERRUPT();
+        PHYDisableInterrupt();
+
         // Link failed/stack reset
         s_tStats.linkFailures++;
         iptraceNETWORK_DOWN();
@@ -561,10 +567,7 @@ bool EthernetPrepareWakeOnLAN(void)
 void InitiateWOLandWait(void)
 {
     // Silence the Ethernet controller
-    DISABLE_INTERRUPT();
-
     ETHCON1CLR = _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
-
     while( ETHSTATbits.RXBUSY || ETHSTATbits.TXBUSY );
 
     // Arm the PHY and wait for an awakening
@@ -575,8 +578,6 @@ void InitiateWOLandWait(void)
 
 void PowerdownEthernet(void)
 {
-    DISABLE_INTERRUPT();
-
     ETHCON1CLR = _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
     while( ETHSTATbits.RXBUSY || ETHSTATbits.TXBUSY );
 
@@ -647,19 +648,20 @@ bool ExecuteSelfTests(void)
     // Fix PHY and MAC to operate at 100Mbps full duplex and put the loopback at the PHY
     PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
 
-#if 0
-    while( PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
-#else
     if( !TEST_IF_TRUE_WITH_RETRY( (PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET) == 0, SELF_TEST_RETRY_COUNT ) )
     {
         return false;
     }
-#endif
 
     PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
 
+    if( !TEST_IF_TRUE_WITH_RETRY( PHYRead(PHY_REG_BASIC_STATUS) & PHY_STAT_LINK_IS_UP, SELF_TEST_RETRY_COUNT ) )
+    {
+        return false;
+    }
+
     MACConfigure(PHY_SPEED_100MBPS, true);
-    EMAC1CFG1SET = _EMAC1CFG1_LOOPBACK_MASK;
+//  EMAC1CFG1SET = _EMAC1CFG1_LOOPBACK_MASK;
 
     InitialiseDMADescriptorLists();
 
@@ -667,70 +669,74 @@ bool ExecuteSelfTests(void)
 
     ETHCON1SET = _ETHCON1_RXEN_MASK;
 
-    NetworkBufferDescriptor_t *pTxDescriptor = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, 0);
+    uint16_t iterations = min(ipconfigPIC32_TX_DMA_DESCRIPTORS, ipconfigPIC32_RX_DMA_DESCRIPTORS);
 
-    if( !pTxDescriptor )
+    do
     {
-        return false;
-    }
+        NetworkBufferDescriptor_t *pTxDescriptor = pxGetNetworkBufferWithDescriptor(ipTOTAL_ETHERNET_FRAME_SIZE, 0);
 
-    pTxDescriptor->xDataLength = ipconfigNETWORK_MTU + sizeof(EthernetHeader_t);
-
-    EthernetHeader_t *pTxHeader = (EthernetHeader_t *) pTxDescriptor->pucEthernetBuffer;
-    memset(pTxHeader, 0xFF, sizeof(*pTxHeader));
-    pTxHeader->usFrameType = FreeRTOS_htons(ipconfigNETWORK_MTU);
-
-    uint8_t *pTxData = (uint8_t *) (pTxHeader + 1);
-
-    uint16_t c;
-    for(c = 0; c < ipconfigNETWORK_MTU; c++)
-    {
-        *pTxData++ = ipconfigRAND32();
-    }
-
-    // Start transmission
-    if( !xNetworkInterfaceOutput(pTxDescriptor, pdTRUE) )
-    {
-        return false;
-    }
-
-    // Wait until Tx operation completes
-    if( !TEST_IF_TRUE_WITH_RETRY((ETHCON1 & _ETHCON1_TXRTS_MASK) == 0, SELF_TEST_RETRY_COUNT) )
-    {
-        return false;
-    }
-
-    // Check transmit successful
-    if( (s_pPendingTxDMADescKVA->statusVectorLow & ETH_TSVL_TRANSMIT_DONE) == 0 )
-    {
-        return false;
-    }
-
-    // Wait for packet reception
-    if( !TEST_IF_TRUE_WITH_RETRY(ETHIRQ & _ETHIRQ_RXDONE_MASK, SELF_TEST_RETRY_COUNT) )
-    {
-        return false;
-    }
-
-    // Check packet received ok
-    if( ((s_pCurrentRxDMADescKVA->statusVectorLow & ETH_RSVL_RX_OK) == 0)
-        || (s_pPendingTxDMADescKVA->hdr.Count != (s_pCurrentRxDMADescKVA->hdr.Count - FCS_LENGTH)) )
-    {
-        return false;
-    }
-
-    // Compare data received with what was allegedly transmitted
-    const NetworkBufferDescriptor_t *pRxDescriptor = pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pBufferPA) );
-
-    const uint8_t *pRxData = pRxDescriptor->pucEthernetBuffer;
-
-    for(c = 0, pTxData = pTxDescriptor->pucEthernetBuffer; c < s_pPendingTxDMADescKVA->hdr.Count; c++)
-    {
-        if( *pRxData++ != *pTxData++ )
+        if( !pTxDescriptor )
         {
             return false;
         }
+
+        pTxDescriptor->xDataLength = ipconfigNETWORK_MTU + sizeof(EthernetHeader_t);
+
+        EthernetHeader_t *pTxHeader = (EthernetHeader_t *) pTxDescriptor->pucEthernetBuffer;
+        memset(pTxHeader, 0xFF, sizeof(*pTxHeader));
+        pTxHeader->usFrameType = FreeRTOS_htons(ipconfigNETWORK_MTU);
+
+        uint8_t *pTxData = (uint8_t *) (pTxHeader + 1);
+
+        uint16_t c;
+        for(c = 0; c < ipconfigNETWORK_MTU; c++)
+        {
+            *pTxData++ = ipconfigRAND32();
+        }
+
+        // Start transmission
+        if( !xNetworkInterfaceOutput(pTxDescriptor, pdTRUE) )
+        {
+            return false;
+        }
+
+        // Wait until Tx operation completes
+        if( !TEST_IF_TRUE_WITH_RETRY((ETHCON1 & _ETHCON1_TXRTS_MASK) == 0, SELF_TEST_RETRY_COUNT) )
+        {
+            return false;
+        }
+
+        // Check transmit successful
+        if( (s_pPendingTxDMADescKVA->statusVectorLow & ETH_TSVL_TRANSMIT_DONE) == 0 )
+        {
+            return false;
+        }
+
+        // Wait for packet reception
+        if( !TEST_IF_TRUE_WITH_RETRY(ETHIRQ & _ETHIRQ_RXDONE_MASK, SELF_TEST_RETRY_COUNT) )
+        {
+            return false;
+        }
+
+        // Check packet received ok
+        if( ((s_pCurrentRxDMADescKVA->statusVectorLow & ETH_RSVL_RX_OK) == 0)
+            || (s_pPendingTxDMADescKVA->hdr.Count != (s_pCurrentRxDMADescKVA->hdr.Count - FCS_LENGTH)) )
+        {
+            return false;
+        }
+
+        // Compare data received with what was allegedly transmitted
+        const NetworkBufferDescriptor_t *pRxDescriptor = pxPacketBuffer_to_NetworkBuffer( PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pBufferPA) );
+
+        if( memcmp(pTxDescriptor->pucEthernetBuffer, pRxDescriptor->pucEthernetBuffer, s_pPendingTxDMADescKVA->hdr.Count) != 0 )
+        {
+            return false;
+        }
+
+        s_pCurrentRxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pCurrentRxDMADescKVA->pNextDescriptorPA);
+        s_pPendingTxDMADescKVA = PA_TO_KVA1((uintptr_t) s_pPendingTxDMADescKVA->pNextDescriptorPA);
     }
+    while( --iterations );
 
     return true;
 }
