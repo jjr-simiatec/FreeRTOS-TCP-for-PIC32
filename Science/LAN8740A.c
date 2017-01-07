@@ -28,6 +28,7 @@
 #include <stdbool.h>
 
 #include "Ethernet.h"
+#include "EthernetPrivate.h"
 #include "LAN8740A.h"
 #include "PIC32Arch.h"
 
@@ -224,11 +225,30 @@ phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
 
 void PHYInterruptHandler(void)
 {
-    IFS0CLR = _IFS0_INT4IF_MASK;
-
-    uint16_t intSource = PHYRead(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
+    IEC0CLR = _IEC0_INT4IE_MASK;
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
+
+    if(g_interfaceState == ETH_NORMAL)
+    {
+        xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
+    }
+    else if(g_interfaceState == ETH_WAKE_ON_LAN)
+    {
+        if(InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN_WOKEN, ETH_WAKE_ON_LAN) == ETH_WAKE_ON_LAN)
+        {
+            xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
+        }
+    }
+
+    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+}
+
+void PHYDeferredInterruptHandler(void)
+{
+    uint16_t intSource = PHYRead(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
+
+    IFS0CLR = _IFS0_INT4IF_MASK;
 
     if(g_interfaceState == ETH_NORMAL)
     {
@@ -237,26 +257,13 @@ void PHYInterruptHandler(void)
             uint16_t bs = PHYRead(PHY_REG_BASIC_STATUS);
 
             if(bs & PHY_STAT_LINK_IS_UP)
-            {
-                xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
-            }
+                xSemaphoreGive(g_hLinkUpSemaphore);
             else
-            {
-                if( FreeRTOS_NetworkDownFromISR() )
-                    bHigherPriorityTaskWoken = pdTRUE;
-            }
-        }
-    }
-    else if(g_interfaceState == ETH_WAKE_ON_LAN)
-    {
-        if(intSource & LAN8740_INT_WOL)
-        {
-            InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN_WOKEN, ETH_WAKE_ON_LAN);
-            xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
+                FreeRTOS_NetworkDown();
         }
     }
 
-    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+    IEC0SET = _IEC0_INT4IE_MASK;
 }
 
 bool PHYSupportsWOL(void)
@@ -272,8 +279,8 @@ void PHYPrepareWakeOnLAN(void)
     PHY_MMDWrite(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_WAKEUP_CTRL_STATUS, wucsr | LAN8740_MMD_PCS_WUCSR_MAGIC_PACKET_EN);
 
     PHYWrite(LAN8740_REG_INTERRUPT_MASK, LAN8740_INT_WOL);
+    
     PHYRead(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
-
     IFS0CLR = _IFS0_INT4IF_MASK;
     IEC0SET = _IEC0_INT4IE_MASK;
 }

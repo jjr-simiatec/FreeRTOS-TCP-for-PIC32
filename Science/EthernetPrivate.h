@@ -95,6 +95,10 @@ typedef enum {
     ETH_RSVH_RXF_MULTICAST = 1UL << 31
 } eth_status_vector_rx_high_t;
 
+typedef enum {
+    ETH_TASK_PHY_INTERRUPT = 1UL << 24
+} eth_task_notification_t;
+
 typedef struct __attribute__((packed, aligned(4))) {
     // Volatile members can be updated by the Ethernet controller
     // Members ending in PA are physical addresses; assign using KVA_TO_PA
@@ -120,6 +124,8 @@ typedef struct __attribute__((packed, aligned(4))) {
 } eth_dma_descriptor_t;
 
 extern TaskHandle_t g_hEthernetTask;
+extern volatile BaseType_t g_interfaceState;
+extern SemaphoreHandle_t g_hLinkUpSemaphore;
 
 #ifdef	__cplusplus
 }

@@ -251,6 +251,11 @@ portTASK_FUNCTION(EthernetTask, pParams)
             xSemaphoreGive(s_hTxDMABufMutex);
         }
 
+        if(nTaskEvents & ETH_TASK_PHY_INTERRUPT)
+        {
+            PHYDeferredInterruptHandler();
+        }
+
         s_tStats.alignmentErrors += ETHALGNERR;
         s_tStats.fcsErrors += ETHFCSERR;
         s_tStats.framesReceived += ETHFRMRXOK;
