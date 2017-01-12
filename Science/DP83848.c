@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "EthernetPrivate.h"
 #include "DP83848.h"
 
 extern SemaphoreHandle_t g_hLinkUpSemaphore;
@@ -65,28 +66,32 @@ void PHYGetStatus(phy_status_t *pStatus)
 
 void PHYInterruptHandler(void)
 {
-    IFS0CLR = _IFS0_INT3IF_MASK;
-
-    uint16_t intSource = PHYRead(DP83848_REG_INTERRUPT_STATUS);
+    IEC0CLR = _IEC0_INT3IE_MASK;
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
+    
+    xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
+
+    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+}
+
+void PHYDeferredInterruptHandler(void)
+{
+    uint16_t intSource = PHYRead(DP83848_REG_INTERRUPT_STATUS);
+
+    IFS0CLR = _IFS0_INT3IF_MASK;
 
     if(intSource & (DP83848_MISR_AUTO_NEG_COMPLETE | DP83848_MISR_LINK_STATUS_CHANGE))
     {
         uint16_t status = PHYRead(DP83848_REG_PHY_STATUS);
 
         if(status & DP83848_PHYSTS_LINK_ESTABLISHED)
-        {
-            xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
-        }
+            xSemaphoreGive(g_hLinkUpSemaphore);
         else
-        {
-            if( FreeRTOS_NetworkDownFromISR() )
-                bHigherPriorityTaskWoken = pdTRUE;
-        }
+            FreeRTOS_NetworkDown();
     }
 
-    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+    IEC0SET = _IEC0_INT3IE_MASK;
 }
 
 phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
