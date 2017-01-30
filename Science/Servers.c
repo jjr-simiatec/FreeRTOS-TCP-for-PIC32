@@ -24,6 +24,7 @@
 #include <ff_ramdisk.h>
 
 #include "TestHarness.h"
+#include "TCPCommandConsole.h"
 
 // The number and size of sectors that will make up the RAM disk
 #define mainRAM_DISK_SECTOR_SIZE    512UL
@@ -56,6 +57,7 @@ static FF_Disk_t *pxRAMDisk = NULL;
 ePingReplyStatus_t g_tPingReplyStatus;
 uint16_t g_nPingReplySequence;
 
+extern void vRegisterSampleCLICommands(void);
 extern void vCreateAndVerifyExampleFiles(char *pcMountPath);
 
 void vApplicationIPNetworkEventHook(eIPCallbackEvent_t eNetworkEvent)
@@ -91,6 +93,9 @@ portTASK_FUNCTION(Task2, pParams)
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
     TCPServer_t *pServers = FreeRTOS_CreateTCPServer(xServerConfiguration, _countof(xServerConfiguration));
+
+    vRegisterSampleCLICommands();
+    vStartTCPCommandInterpreterTask(configMINIMAL_STACK_SIZE * 2, 12345, tskIDLE_PRIORITY + 1);
 
     for( ; ; )
     {

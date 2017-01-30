@@ -41,6 +41,8 @@
       <itemPath>PacketTest.c</itemPath>
       <itemPath>Timer3_isr.S</itemPath>
       <itemPath>LAN9303.c</itemPath>
+      <itemPath>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_CLI_Demos/TCPCommandConsole.c</itemPath>
+      <itemPath>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_CLI_Demos/Sample-CLI-commands.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -52,6 +54,7 @@
     <Elem>.</Elem>
     <Elem>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/portable/common</Elem>
     <Elem>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_FAT_Demos</Elem>
+    <Elem>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_CLI_Demos</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -72,6 +75,7 @@
             <linkerLibFileItem>../FAT/dist/MZ_EFM/production/FAT.a</linkerLibFileItem>
             <linkerLibFileItem>../TCPIP/dist/MZ_EFM/production/TCPIP.a</linkerLibFileItem>
             <linkerLibFileItem>../RTOS/dist/MZ_EFM/production/RTOS.a</linkerLibFileItem>
+            <linkerLibFileItem>../CLI/dist/MZ_EFM/production/CLI.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -106,7 +110,7 @@
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
-        <property key="optimization-level" value=""/>
+        <property key="optimization-level" value="-O1"/>
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
@@ -210,7 +214,7 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include"/>
+                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-CLI;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_CLI_Demos\include"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
         <property key="relaxed-math" value="false"/>
@@ -567,6 +571,7 @@
             <linkerLibFileItem>../FAT/dist/MZ_ECM/production/FAT.a</linkerLibFileItem>
             <linkerLibFileItem>../TCPIP/dist/MZ_ECM/production/TCPIP.a</linkerLibFileItem>
             <linkerLibFileItem>../RTOS/dist/MZ_ECM/production/RTOS.a</linkerLibFileItem>
+            <linkerLibFileItem>../CLI/dist/MZ_ECM/production/CLI.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -705,7 +710,7 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include"/>
+                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-CLI;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_CLI_Demos\include"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
         <property key="relaxed-math" value="false"/>
@@ -1062,6 +1067,7 @@
             <linkerLibFileItem>../FAT/dist/MX_795/production/FAT.a</linkerLibFileItem>
             <linkerLibFileItem>../TCPIP/dist/MX_795/production/TCPIP.a</linkerLibFileItem>
             <linkerLibFileItem>../RTOS/dist/MX_795/production/RTOS.a</linkerLibFileItem>
+            <linkerLibFileItem>../CLI/dist/MX_795/production/CLI.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -1248,7 +1254,7 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include"/>
+                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-CLI;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_CLI_Demos\include"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
         <property key="relaxed-math" value="false"/>
