@@ -7,6 +7,8 @@ A FreeRTOS+TCP port for PIC32 microcontrollers.
 ## Project structure
 ```
 $
++---CLI
+|   \---nbproject
 +---FAT
 |   \---nbproject
 +---include
@@ -46,7 +48,7 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 `mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS\Source"`  
 `mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160823\FreeRTOS-Plus\Source"`
 
-2. Using MPLABX IDE, open the projects `FAT`, `RTOS` and `TCPIP`.
+2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
 
 3. For each project, select the required configuration and then build. The available configurations are `MZ_EFM`, `MZ_ECM` and `MX_795` corresponding to the microcontroller type on each Starter Kit.
 
@@ -54,13 +56,13 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 
 ## How to use
 
-The program presents a terminal interface via UART2. The PIC32 EF Starter Kit includes a MCP2221 USB to UART converter chip so you're good to go straight away. For the other kits, you would need to connect a RS232 line driver chip using an expansion board.
+The program presents a terminal interface via UART2 and a command line interface on TCP port 12345. The PIC32 EF Starter Kit includes a MCP2221 USB to UART converter chip so you can use either interface. For the other kits, you can only use the TCP CLI unless you're willing to add a RS232 interface via the expansion connector.
 
-The terminal interface was mainly used for testing and debugging so there are statistics displays and register dumps (which should give you an idea of the sort of things that weren't working at various points in time). When the driver began to work, it was used for experimentation and investigation.
+The UART terminal interface was mainly used for testing and debugging so there are statistics displays and register dumps (which should give you an idea of the sort of things that weren't working at various points in time). When the driver began to work, it was used for experimentation and investigation.
 
 The Packet Test task was used to evaluate performance and latency. The LEDs are toggled at various points in time. By using a scope, you can get an idea of how the stack and the hardware are performing. For example, if one Starter Kit is configured as the transmitter and another as a receiver, you can probe LED1 on the transmitter to see when the timer interrupt triggered and probe LED3 on the receiver to see when the packet arrived.
 
-The web server and ftp server parts of the FreeRTOS+TCP demo also run on the MZ class microcontrollers. In order to shoehorn a RAM disk into the 512K available, I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This means the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo is able to work properly, and by extension the servers too.
+The web server and ftp server parts of the FreeRTOS+TCP demo also run on the MZ class microcontrollers. In order to shoehorn a RAM disk into the available RAM, I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This means the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo is able to work properly, and by extension the servers too. The web server with a smaller RAM disk has also been squeezed on to the MX.
 
 ## Ethernet driver
 
