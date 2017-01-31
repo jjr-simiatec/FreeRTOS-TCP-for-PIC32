@@ -33,6 +33,7 @@
 #include "LAN8740A.h"
 #include "TestHarness.h"
 #include "Ethernet.h"
+#include "FreeRTOS_CLI.h"
 
 #define TESTS_PER_PAGE      12
 
@@ -98,6 +99,8 @@ static void ToggleEthInterface(void);
 static void RunEthernetSelfTest(void);
 extern void Toggle5kHzTraffic(void);
 
+extern BaseType_t CLIToggle5kHzTraffic(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+
 static const test_info_t s_TESTS[] = {
     {'1', &ViewRTOSRunTimeStats, "VIEW RTOS RUNTIME STATS"   },
     {'2', &ViewPHYRegisters,     "VIEW PHY REGISTERS"        },
@@ -109,6 +112,12 @@ static const test_info_t s_TESTS[] = {
     {'8', &ToggleEthInterface,   "ETHERNET INTERFACE UP/DOWN"},
     {'9', &RunEthernetSelfTest,  "ETHERNET SELF TEST"        },
     {'R', &ResetBoard,           "SOFT RESET"                }
+};
+
+static const CLI_Command_Definition_t s_CLI_COMMAND_LIST[] = {
+    {"toggle-5khz-tx",
+     "\r\ntoggle-5khz-tx:\r\n Toggle 5kHz Transmitter\r\n",
+     &CLIToggle5kHzTraffic, 0}
 };
 
 static size_t s_nTestMenuTopIndx = 0;
@@ -543,4 +552,13 @@ void ResetBoard(void)
 {
     // Works as a reset in non-debug builds
     __builtin_software_breakpoint();
+}
+
+void RegisterTestHarnessCLICommands(void)
+{
+    size_t c;
+    for(c = 0; c < _countof(s_CLI_COMMAND_LIST); c++)
+    {
+        FreeRTOS_CLIRegisterCommand(&s_CLI_COMMAND_LIST[c]);
+    }
 }

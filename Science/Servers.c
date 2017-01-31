@@ -95,6 +95,8 @@ portTASK_FUNCTION(Task2, pParams)
     TCPServer_t *pServers = FreeRTOS_CreateTCPServer(xServerConfiguration, _countof(xServerConfiguration));
 
     vRegisterSampleCLICommands();
+    RegisterTestHarnessCLICommands();
+    
     vStartTCPCommandInterpreterTask(configMINIMAL_STACK_SIZE * 2, 12345, tskIDLE_PRIORITY + 1);
 
     for( ; ; )

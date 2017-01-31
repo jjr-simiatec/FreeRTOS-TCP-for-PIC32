@@ -89,6 +89,20 @@ void Toggle5kHzTraffic(void)
 #endif
 }
 
+BaseType_t CLIToggle5kHzTraffic(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
+{
+#if defined(BUILD_TRANSMITTER)
+    T3CONINV = _T3CON_ON_MASK;
+    LATxCLR = 0x03;
+
+    snprintf(pcWriteBuffer, xWriteBufferLen, "Transmitter is %s.", T3CONbits.TON ? "running" : "inactive");
+#else
+    snprintf(pcWriteBuffer, xWriteBufferLen, "Not implemented.");
+#endif
+    
+    return pdFALSE;
+}
+
 #if defined(BUILD_TRANSMITTER)
 
 portTASK_FUNCTION(PacketTask, pParams)

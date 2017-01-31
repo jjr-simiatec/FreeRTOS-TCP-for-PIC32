@@ -35,6 +35,7 @@ extern ePingReplyStatus_t g_tPingReplyStatus;
 extern uint16_t g_nPingReplySequence;
 
 extern void ShowTestTitle(const char *pTitle);
+extern void RegisterTestHarnessCLICommands(void);
 extern const char *FloatToStr(double d);
 
 #endif // TEST_HARNESS_H
