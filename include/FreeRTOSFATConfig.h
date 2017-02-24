@@ -244,7 +244,7 @@ that can be recognised. */
 
 /* Defines how many drives can be combined in total.  Should be set to at
 least 2. */
-#define	ffconfigMAX_FILE_SYS 2
+#define	ffconfigMAX_FILE_SYS 3
 
 /* In case the low-level driver returns an error 'FF_ERR_DRIVER_BUSY',
 the library will pause for a number of ms, defined in
