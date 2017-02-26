@@ -87,9 +87,6 @@ void Uart2Initialise(uint32_t baud)
     s_UartRxQueue = xQueueCreate(UART2_RX_QUEUE_SIZE, sizeof(uint8_t));
     s_UartTxQueue = xQueueCreate(UART2_TX_QUEUE_SIZE, sizeof(uint8_t));
 
-    vQueueAddToRegistry(s_UartRxQueue, "UartRx");
-    vQueueAddToRegistry(s_UartTxQueue, "UartTx");
-
     U2BRG = CalcUartBaudRate(configPERIPHERAL_CLOCK_HZ, baud);
 
     U2MODEbits.PDSEL = 0;   // 8-bit data, no parity
