@@ -100,14 +100,14 @@ static const uint8_t pMIIM_CLOCK_DIVIDERS[] = {
 #define NET_BUFFER_SIZE_ROUNDED_UP ((NET_BUFFER_SIZE + 3) & ~0x03UL)
 #define SELF_TEST_RETRY_COUNT   (5)
 
-static uint8_t s_tNetworkBuffers[ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS][NET_BUFFER_SIZE_ROUNDED_UP] __attribute((aligned(4), coherent));
+static volatile uint8_t s_tNetworkBuffers[ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS][NET_BUFFER_SIZE_ROUNDED_UP] __attribute((aligned(4), coherent));
 
-static eth_dma_descriptor_t s_tTxDMADescriptors[ipconfigPIC32_TX_DMA_DESCRIPTORS] __attribute__((coherent));
-static eth_dma_descriptor_t s_tRxDMADescriptors[ipconfigPIC32_RX_DMA_DESCRIPTORS] __attribute__((coherent));
+static volatile eth_dma_descriptor_t s_tTxDMADescriptors[ipconfigPIC32_TX_DMA_DESCRIPTORS] __attribute__((coherent));
+static volatile eth_dma_descriptor_t s_tRxDMADescriptors[ipconfigPIC32_RX_DMA_DESCRIPTORS] __attribute__((coherent));
 
-static eth_dma_descriptor_t *s_pCurrentRxDMADescKVA;
-static eth_dma_descriptor_t *s_pCurrentTxDMADescKVA;
-static eth_dma_descriptor_t *s_pPendingTxDMADescKVA;
+static volatile eth_dma_descriptor_t *s_pCurrentRxDMADescKVA;
+static volatile eth_dma_descriptor_t *s_pCurrentTxDMADescKVA;
+static volatile eth_dma_descriptor_t *s_pPendingTxDMADescKVA;
 
 static eth_stats_t s_tStats;
 static TaskHandle_t s_hTaskWaitingForTestResult = NULL;
@@ -135,6 +135,23 @@ static bool ExecuteSelfTests(void);
     } \
     result; \
 }) \
+
+static NetworkBufferDescriptor_t *pxDebugGetNetworkBufferWithDescriptor(size_t xRequestedSizeBytes, TickType_t xBlockTimeTicks)
+{
+    NetworkBufferDescriptor_t *p = pxGetNetworkBufferWithDescriptor(xRequestedSizeBytes, xBlockTimeTicks);
+    
+    if( !p )
+        return NULL;
+    
+    NetworkBufferDescriptor_t *q = pxPacketBuffer_to_NetworkBuffer(p->pucEthernetBuffer);
+    
+    if(p != q)
+        __builtin_software_breakpoint();
+    
+    return p;
+}
+
+//#define pxGetNetworkBufferWithDescriptor pxDebugGetNetworkBufferWithDescriptor
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -349,7 +366,7 @@ void MACConfigure(phy_speed_t speed, bool fullDuplex)
 BaseType_t xNetworkInterfaceInitialise(void)
 {
     if( !g_hEthernetTask )
-    {
+    {        
         // First time through
         g_hLinkUpSemaphore = xSemaphoreCreateBinary();
         s_hTxDMABufCountSemaphore = xSemaphoreCreateCounting(ipconfigPIC32_TX_DMA_DESCRIPTORS, ipconfigPIC32_TX_DMA_DESCRIPTORS);
@@ -357,8 +374,8 @@ BaseType_t xNetworkInterfaceInitialise(void)
         configASSERT( g_hLinkUpSemaphore && s_hTxDMABufCountSemaphore && s_hTxDMABufMutex );
 
         memset(&s_tStats, 0, sizeof(s_tStats));
-        memset(s_tTxDMADescriptors, 0, sizeof(s_tTxDMADescriptors));
-        memset(s_tRxDMADescriptors, 0, sizeof(s_tRxDMADescriptors));
+        memset((void *) s_tTxDMADescriptors, 0, sizeof(s_tTxDMADescriptors));
+        memset((void *) s_tRxDMADescriptors, 0, sizeof(s_tRxDMADescriptors));
 
         xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &g_hEthernetTask);
         configASSERT(g_hEthernetTask);
@@ -480,20 +497,24 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxNetworkBu
 
 void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkBuffers[ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS] )
 {
+    memset(s_tNetworkBuffers, 0xBB, sizeof(s_tNetworkBuffers));
+    
     size_t c;
     for(c = 0; c < ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS; c++)
     {
-        pxNetworkBuffers[c].pucEthernetBuffer = &s_tNetworkBuffers[c][ipBUFFER_PADDING];
+        volatile uint8_t *pBuffer = &s_tNetworkBuffers[c][0];
+        
+        pxNetworkBuffers[c].pucEthernetBuffer = (uint8_t *) (pBuffer + ipBUFFER_PADDING);
 
         // The need for the following will be removed in a future version of the stack
-        *((uintptr_t *) &s_tNetworkBuffers[c][0]) = (uintptr_t) &pxNetworkBuffers[c];
+        *((NetworkBufferDescriptor_t **) pBuffer) = &pxNetworkBuffers[c];
     }
 }
 
 void InitialiseDMADescriptorLists(void)
 {
     size_t c;
-    eth_dma_descriptor_t *p;
+    volatile eth_dma_descriptor_t *p;
 
     // Rx descriptors list with the Ethernet Controller owning all blocks
     for(c = 0; c < ipconfigPIC32_RX_DMA_DESCRIPTORS; c++)

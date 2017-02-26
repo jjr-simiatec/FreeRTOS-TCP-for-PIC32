@@ -20,26 +20,27 @@
 // TCP/IP Stack
 #include <FreeRTOS_IP.h>
 #include <FreeRTOS_TCP_Server.h>
-// File System
-#include <ff_ramdisk.h>
+// C Runtime
+#include <stdbool.h>
 
+#include "ff_ramdiskex.h"
 #include "TestHarness.h"
 #include "TCPCommandConsole.h"
 
 // The number and size of sectors that will make up the RAM disk
-#define mainRAM_DISK_SECTOR_SIZE    512UL
+#define mainDISK_SECTOR_SIZE    512UL
+#define mainRAM_DISK_SECTORS    ((20UL * 1024UL) / mainDISK_SECTOR_SIZE)
 
 #if defined(__PIC32MX__)
-#define mainRAM_DISK_SECTORS    ((30UL * 1024UL) / mainRAM_DISK_SECTOR_SIZE)
 static const char pBOARD_NAME[] = "pic32mx";
 #elif defined(__PIC32MZ__)
-#define mainRAM_DISK_SECTORS    ((64UL * 1024UL) / mainRAM_DISK_SECTOR_SIZE)
 static const char pBOARD_NAME[] = "pic32mz";
 #endif
 
-#define mainIO_MANAGER_CACHE_SIZE   (4UL * mainRAM_DISK_SECTOR_SIZE)
+#define mainIO_MANAGER_CACHE_SIZE   (2UL * mainDISK_SECTOR_SIZE)
 
 #define mainRAM_DISK_NAME           "/ram"
+#define mainWEB_DISK_NAME           "/www"
 
 static const struct xSERVER_CONFIG xServerConfiguration[] =
 {
@@ -50,9 +51,13 @@ static const struct xSERVER_CONFIG xServerConfiguration[] =
 #endif
 };
 
-static uint8_t ucRAMDisk[mainRAM_DISK_SECTORS * mainRAM_DISK_SECTOR_SIZE];
+extern const uint8_t _binary_Web_Disk_img_start[];
+extern const size_t _binary_Web_Disk_img_size;
+
+static uint8_t ucRAMDisk[mainRAM_DISK_SECTORS * mainDISK_SECTOR_SIZE];
 
 static FF_Disk_t *pxRAMDisk = NULL;
+static FF_Disk_t *pxROMDisk = NULL;
 
 ePingReplyStatus_t g_tPingReplyStatus;
 uint16_t g_nPingReplySequence;
@@ -87,6 +92,9 @@ portTASK_FUNCTION(Task2, pParams)
     // Create the RAM disk
     pxRAMDisk = FF_RAMDiskInit(mainRAM_DISK_NAME, ucRAMDisk, mainRAM_DISK_SECTORS, mainIO_MANAGER_CACHE_SIZE);
     configASSERT(pxRAMDisk);
+    
+    pxROMDisk = FF_DiskImageReadOnlyInit(mainWEB_DISK_NAME, _binary_Web_Disk_img_start, (size_t) &_binary_Web_Disk_img_size / mainDISK_SECTOR_SIZE, mainIO_MANAGER_CACHE_SIZE);
+    configASSERT(pxROMDisk);
 
     vCreateAndVerifyExampleFiles(mainRAM_DISK_NAME);
 

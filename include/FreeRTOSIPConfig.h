@@ -339,17 +339,16 @@ when ipconfigDHCP_USES_USER_HOOK is set to 1. */
 
 /* Include both TCP and HTTP. */
 #define ipconfigUSE_HTTP                        1
+#define ipconfigUSE_FTP                         1
 
 /* Dimension the buffers and windows used by the FTP and HTTP servers. */
 #if defined(__PIC32MX__)
-#define ipconfigUSE_FTP                         0
 
 #define ipconfigHTTP_TX_BUFSIZE                 ( 1 * ipconfigTCP_MSS )
 #define ipconfigHTTP_TX_WINSIZE                 ( 1 )
 #define ipconfigHTTP_RX_BUFSIZE                 ( 1 * ipconfigTCP_MSS )
 #define ipconfigHTTP_RX_WINSIZE                 ( 1 )
 #else
-#define ipconfigUSE_FTP                         1
 
 #define ipconfigFTP_TX_BUFSIZE                  ( 4 * ipconfigTCP_MSS )
 #define ipconfigFTP_TX_WINSIZE                  ( 2 )
