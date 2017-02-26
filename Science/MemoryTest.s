@@ -162,9 +162,11 @@ r0_loop:
 
 memtest_pass:
     jr	    $a2
+    nop
 
 memtest_failure:
     wait
     b	    memtest_failure
+    nop
 
     .end    MemTest_MarchingC
