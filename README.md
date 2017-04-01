@@ -45,8 +45,8 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 ## How to build
 
 1. In the root folder (marked `$` in the project structure above), you will need to create symlinks to the locations of the FreeRTOS and FreeRTOS-Plus source trees. For example on Windows:  
-`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS\Source"`  
-`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160823\FreeRTOS-Plus\Source"`
+`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS"`  
+`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160823\FreeRTOS-Plus"`
 
 2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
 
