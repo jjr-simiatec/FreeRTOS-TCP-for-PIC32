@@ -62,7 +62,7 @@ The UART terminal interface was mainly used for testing and debugging so there a
 
 The Packet Test task was used to evaluate performance and latency. The LEDs are toggled at various points in time. By using a scope, you can get an idea of how the stack and the hardware are performing. For example, if one Starter Kit is configured as the transmitter and another as a receiver, you can probe LED1 on the transmitter to see when the timer interrupt triggered and probe LED3 on the receiver to see when the packet arrived.
 
-The web server and ftp server parts of the FreeRTOS+TCP demo also run on the MZ class microcontrollers. In order to shoehorn a RAM disk into the available RAM, I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This means the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo is able to work properly, and by extension the servers too. The web server with a smaller RAM disk has also been squeezed on to the MX.
+The web server and ftp server parts of the FreeRTOS+TCP demo also run on the MX class microcontrollers. In order to shoehorn a RAM disk into the available RAM, I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This means the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo is able to work properly, and by extension the servers too. The web server with a smaller RAM disk has also been squeezed on to the MX.
 
 ## Ethernet driver
 
