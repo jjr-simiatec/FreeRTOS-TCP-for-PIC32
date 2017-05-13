@@ -44,9 +44,9 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 
 ## How to build
 
-1. In the root folder (marked `$` in the project structure above), you will need to create symlinks to the locations of the FreeRTOS and FreeRTOS-Plus source trees. For example on Windows:  
-`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS\Source"`  
-`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160823\FreeRTOS-Plus\Source"`
+1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS-Plus source code. Alternatively, create symbolic links to the locations of the FreeRTOS and FreeRTOS-Plus source trees. For example on Windows:  
+`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS"`  
+`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160919\FreeRTOS-Plus"`
 
 2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
 
@@ -62,7 +62,7 @@ The UART terminal interface was mainly used for testing and debugging so there a
 
 The Packet Test task was used to evaluate performance and latency. The LEDs are toggled at various points in time. By using a scope, you can get an idea of how the stack and the hardware are performing. For example, if one Starter Kit is configured as the transmitter and another as a receiver, you can probe LED1 on the transmitter to see when the timer interrupt triggered and probe LED3 on the receiver to see when the packet arrived.
 
-The web server and ftp server parts of the FreeRTOS+TCP demo also run on the MZ class microcontrollers. In order to shoehorn a RAM disk into the available RAM, I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This means the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo is able to work properly, and by extension the servers too. The web server with a smaller RAM disk has also been squeezed on to the MX.
+The web server and ftp server parts of the FreeRTOS+TCP demo will also run on the PIC32. The web server demo files are stored in a blob containing a FAT file system prepared using Linux. This blob resides in Flash and is mounted in `/www`. I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This allows a small RAM disk to be created that will pass the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo. The RAM disk is mounted in `/ram`. This arrangement reduces RAM usage considerably and allows the demo to work on the MX class microcontroller too.
 
 ## Ethernet driver
 
