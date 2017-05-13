@@ -34,7 +34,16 @@
 #include "TestHarness.h"
 #include "PIC32Arch.h"
 
+#if defined(__PIC32MX__)
+
 #define PIC32MX_MAX_FLASH_SPEED   30000000UL
+
+#define CHECON_PREFEN_CACHEABLE     1
+#define CHECON_PREFEN_ALL_REGIONS   3
+#define CP0_CONFIG_K0_UNCACHED      2
+#define CP0_CONFIG_K0_CACHEABLE     3
+
+#endif
 
 #ifndef __MPLAB_DEBUGGER_SIMULATOR
 #define UART2_BAUD_RATE     115200UL
@@ -196,14 +205,19 @@ static void PIC32MXConfigureWaitStates(void)
 
     uint32_t tmp = CHECON & ~(_CHECON_PFMWS_MASK | _CHECON_PREFEN_MASK);
 
-    // Set flash wait states and enabled prefetch for cacheable regions
-    CHECON = (tmp | nWaitStates | (1 << _CHECON_PREFEN_POSITION));
+    if(nWaitStates > 0)
+    {
+        tmp |= (CHECON_PREFEN_ALL_REGIONS << _CHECON_PREFEN_POSITION);
+    }
+
+    // Set flash wait states and enabled prefetch for all regions
+    CHECON = (tmp | (nWaitStates << _CHECON_PFMWS_POSITION));
 }
 
 void HardwareConfigurePerformance(void)
 {
     // Set analog pins to digital mode
-    AD1PCFG = 0xFFFF;
+    AD1PCFG = _AD1PCFG_PCFG_MASK;
 
     // I/O for Ethernet PHY
     TRISASET = _TRISA_TRISA14_MASK;
@@ -212,11 +226,16 @@ void HardwareConfigurePerformance(void)
     // I/O configuration for LEDs/switches
     TRISDCLR = 0x07;
 
+    // Disable SRAM wait states
+    BMXCONCLR = _BMXCON_BMXWSDRM_MASK;
+
     // Configure flash wait states and prefetch caches
     PIC32MXConfigureWaitStates();
 
-    // Disable SRAM wait states
-    BMXCONCLR = _BMXCON_BMXWSDRM_MASK;
+    // Make Kseg0 cacheable
+    uint32_t cfg0 = _CP0_GET_CONFIG();
+    cfg0 = (cfg0 & ~_CP0_CONFIG_K0_MASK) | (CP0_CONFIG_K0_CACHEABLE << _CP0_CONFIG_K0_POSITION);
+    _mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, cfg0);
 }
 
 void HardwareUseMultiVectoredInterrupts(void)
