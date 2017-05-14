@@ -233,9 +233,7 @@ void HardwareConfigurePerformance(void)
     PIC32MXConfigureWaitStates();
 
     // Make Kseg0 cacheable
-    uint32_t cfg0 = _CP0_GET_CONFIG();
-    cfg0 = (cfg0 & ~_CP0_CONFIG_K0_MASK) | (CP0_CONFIG_K0_CACHEABLE << _CP0_CONFIG_K0_POSITION);
-    _mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, cfg0);
+    _bcsc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, _CP0_CONFIG_K0_MASK, CP0_CONFIG_K0_CACHEABLE << _CP0_CONFIG_K0_POSITION);
 }
 
 void HardwareUseMultiVectoredInterrupts(void)
