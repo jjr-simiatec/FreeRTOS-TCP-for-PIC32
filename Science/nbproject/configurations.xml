@@ -42,7 +42,8 @@
       <itemPath>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_CLI_Demos/TCPCommandConsole.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_CLI_Demos/Sample-CLI-commands.c</itemPath>
       <itemPath>CreateAndVerifyExampleFiles.c</itemPath>
-      <itemPath>MemoryTest.s</itemPath>
+      <itemPath>OnReset.S</itemPath>
+      <itemPath>MemoryTest.S</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -68,7 +69,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.42</languageToolchainVersion>
+        <languageToolchainVersion>1.43</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -565,7 +566,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.42</languageToolchainVersion>
+        <languageToolchainVersion>1.43</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -1062,7 +1063,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>SKDEPIC32PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.42</languageToolchainVersion>
+        <languageToolchainVersion>1.43</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -1592,7 +1593,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.42</languageToolchainVersion>
+        <languageToolchainVersion>1.43</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
