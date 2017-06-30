@@ -550,8 +550,23 @@ void RunEthernetSelfTest(void)
 
 void ResetBoard(void)
 {
-    // Works as a reset in non-debug builds
-    __builtin_software_breakpoint();
+    // Kill any interrupts and DMA in progress
+    __builtin_disable_interrupts();
+
+    if( !DMACONbits.SUSPEND )
+    {
+        DMACONSET = _DMACON_SUSPEND_MASK;
+        while( DMACONbits.DMABUSY );
+    }
+
+    // Unlock the system key
+    SYSKEY_UNLOCK();
+
+    // Issue reset
+    RSWRSTSET = _RSWRST_SWRST_MASK;
+    uint32_t dummy __attribute__((unused)) = RSWRST;
+
+    for( ; ; );
 }
 
 void RegisterTestHarnessCLICommands(void)
