@@ -90,6 +90,8 @@
 #include "MZ_ECM\FreeRTOSConfig.h"
 #elif defined(__32MX795F512L__)
 #include "MX_795\FreeRTOSConfig.h"
+#elif defined(__32MZ2064DAB288__)
+#include "MZ_DAB\FreeRTOSConfig.h"
 #else
 #error "Unsupported processor"
 #endif
