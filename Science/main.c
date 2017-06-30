@@ -65,9 +65,31 @@ static void HardwareConfigurePerformance(void);
 static void HardwareUseMultiVectoredInterrupts(void);
 static void HardwareConfigPeripherals(void);
 
-#if defined(__PIC32MZ__) && (__PIC32_FEATURE_SET1 == 'F')
-static uint32_t TRNGRead32(void);
-static uint64_t TRNGRead64(void);
+#if defined(__PIC32MZ__)
+
+#if (__PIC32_FEATURE_SET0 == 'D')
+
+#define USE_TRNG
+
+void __attribute__(( interrupt(IPL0AUTO), vector(_CHANGE_NOTICE_B_VECTOR) )) PHYInterruptWrapper(void);
+
+#elif (__PIC32_FEATURE_SET0 == 'E')
+
+#if (__PIC32_FEATURE_SET1 == 'F')
+#define USE_TRNG
+#endif
+
+void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_4_VECTOR) )) PHYInterruptWrapper(void);
+
+#endif
+
+#endif
+
+#if defined(USE_TRNG)
+
+extern uint32_t TRNGRead32(void);
+extern uint64_t TRNGRead64(void);
+
 #endif
 
 portTASK_FUNCTION_PROTO(Task1, pParams);
@@ -112,6 +134,8 @@ int main(int argc, char *argv[])
 
 #if defined(__PIC32MZ__)
 
+#if (__PIC32_FEATURE_SET0 == 'E')
+
 void HardwareConfigurePerformance(void)
 {
     SYSKEY_UNLOCK();
@@ -153,6 +177,7 @@ void HardwareConfigurePerformance(void)
     INT4Rbits.INT4R = 0b0111;       // RPC13
 
     INTCONCLR = _INTCON_INT4EP_MASK;    // nINT active low so falling edge
+    IPC5bits.INT4IP = configKERNEL_INTERRUPT_PRIORITY;
 
     // I/O configuration for LEDs/switches
     // Note: Erratum #7 on the PIC32MZ EC means that LEDs 1 and 2 won't work
@@ -182,6 +207,81 @@ void HardwareConfigurePerformance(void)
 
     SYSKEY_LOCK();
 }
+
+#elif (__PIC32_FEATURE_SET0 == 'D')
+
+void HardwareConfigurePerformance(void)
+{
+    SYSKEY_UNLOCK();
+
+    // Disable unused peripherals (REFCLKs not disabled due to erratum #5)
+    PMD1SET = _PMD1_CVRMD_MASK;
+    PMD2SET = _PMD2_CMP1MD_MASK | _PMD2_CMP2MD_MASK;
+    PMD3SET = (_PMD3_IC1MD_MASK | _PMD3_IC2MD_MASK | _PMD3_IC3MD_MASK
+               | _PMD3_IC4MD_MASK | _PMD3_IC5MD_MASK | _PMD3_IC6MD_MASK
+               | _PMD3_IC7MD_MASK | _PMD3_IC8MD_MASK | _PMD3_IC9MD_MASK
+               | _PMD3_OC1MD_MASK | _PMD3_OC2MD_MASK | _PMD3_OC3MD_MASK
+               | _PMD3_OC4MD_MASK | _PMD3_OC5MD_MASK | _PMD3_OC6MD_MASK
+               | _PMD3_OC7MD_MASK | _PMD3_OC8MD_MASK | _PMD3_OC9MD_MASK);
+    PMD5SET = (_PMD5_U1MD_MASK | _PMD5_U3MD_MASK | _PMD5_U4MD_MASK
+               | _PMD5_U5MD_MASK | _PMD5_U6MD_MASK | _PMD5_SPI1MD_MASK
+               | _PMD5_SPI2MD_MASK | _PMD5_SPI3MD_MASK | _PMD5_SPI4MD_MASK
+               | _PMD5_SPI5MD_MASK | _PMD5_SPI6MD_MASK | _PMD5_I2C1MD_MASK
+               | _PMD5_I2C2MD_MASK | _PMD5_I2C4MD_MASK | _PMD5_I2C5MD_MASK
+               | _PMD5_CAN1MD_MASK | _PMD5_CAN2MD_MASK );
+    PMD6SET = (_PMD6_PMPMD_MASK | _PMD6_EBIMD_MASK);
+
+    // I/O configuration for UART2 [pins B0, G9] and I2C3 [pins F2, F8]
+    ANSELBCLR = _ANSELB_ANSB0_MASK;
+    ANSELGCLR = _ANSELG_ANSG9_MASK;
+
+    TRISBSET = _TRISB_TRISB0_MASK;
+    U2RXRbits.U2RXR = 0b0101;   // RPB0
+    RPG9Rbits.RPG9R = 0b0010;   // U2TX
+
+    // I/O configuration for Ethernet PHY
+    LAN8740_ASSERT_HW_RESET();
+    ANSELBCLR = _ANSELB_ANSB11_MASK;
+    TRISJCLR = _TRISJ_TRISJ15_MASK; // nRST
+    TRISBSET = _TRISB_TRISB11_MASK; // nINT
+
+    CNCONBSET = _CNCONB_ON_MASK | _CNCONB_EDGEDETECT_MASK;
+    IPC29bits.CNBIP = configKERNEL_INTERRUPT_PRIORITY;
+
+    IFS3CLR = _IFS3_CNBIF_MASK;
+    IEC3SET = _IEC3_CNBIE_MASK;
+
+    // I/O configuration for LEDs/switches
+    ANSELBCLR = _ANSELB_ANSB12_MASK | _ANSELB_ANSB13_MASK | _ANSELB_ANSB14_MASK;
+    TRISHCLR = _TRISH_TRISH0_MASK | _TRISH_TRISH1_MASK | _TRISH_TRISH2_MASK;
+
+    // Configure peripheral busses
+
+    // Set PBCLK2 to deliver 40Mhz clock for PMP/I2C/UART/SPI
+    // 200MHz / 5 = 40MHz
+    PB2DIVbits.PBDIV = 0b0000100;
+
+    // Timers use clock PBCLK3, set this to 40MHz
+    PB3DIVbits.PBDIV = 0b0000100;
+
+    // Ports use PBCLK4, max allowed frequency is 100MHz
+    PB4DIVbits.PBDIV = 0b0000001;
+
+    // Set PBCLK5 to 100MHz for Ethernet
+    PB5DIVbits.PBDIV = 0b0000001;
+
+    // Enable prefetch module
+    PRECONbits.PFMWS = 2;   // 2 wait state
+    PRECONbits.PREFEN = 3;  // Enable predictive prefetch for any address
+
+    SYSKEY_LOCK();
+}
+
+#else
+
+#error Unsupported PIC32MZ class processor
+
+#endif
 
 void HardwareUseMultiVectoredInterrupts(void)
 {
@@ -270,9 +370,7 @@ void HardwareUseMultiVectoredInterrupts(void)
 
 void HardwareConfigPeripherals(void)
 {
-#if defined(__PIC32MZ__)
-
-#if (__PIC32_FEATURE_SET1 == 'F')
+#if defined(USE_TRNG)
     // Enable TRNG
     RNGCONbits.TRNGEN = 1;
 
@@ -280,8 +378,8 @@ void HardwareConfigPeripherals(void)
     srand( TRNGRead32() );
 #endif
 
-    LATHCLR = 0x07;
-
+#if defined(__PIC32MZ__)
+    LATHCLR = _LATH_LATH0_MASK | _LATH_LATH1_MASK | _LATH_LATH2_MASK;
 #elif defined(__PIC32MX__)
     LATDCLR = 0x07;
 #endif
@@ -294,7 +392,7 @@ time_t FreeRTOS_time(time_t *pxTime)
     return time(pxTime);
 }
 
-#if defined(__PIC32MZ__) && (__PIC32_FEATURE_SET1 == 'F')
+#if defined(USE_TRNG)
 
 uint32_t TRNGRead32(void)
 {
