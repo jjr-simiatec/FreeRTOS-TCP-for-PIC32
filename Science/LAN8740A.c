@@ -52,8 +52,6 @@ static const uint16_t pCABLE_CBLN_LOOKUP[] = {
 
 const uint16_t nPHY_ADDRESS = 0;
 
-void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_4_VECTOR) )) PHYInterruptWrapper(void);
-
 void PHYInitialise(void)
 {
     LAN8740_CLEAR_HW_RESET();
@@ -72,17 +70,15 @@ void PHYInitialise(void)
     PHY_MMDWrite(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_MAC_RX_ADDR_B, EMAC1SA1);
     PHY_MMDWrite(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_MAC_RX_ADDR_C, EMAC1SA2);
 
-    IPC5bits.INT4IP = configKERNEL_INTERRUPT_PRIORITY;
-
-    IFS0CLR = _IFS0_INT4IF_MASK;
-    IEC0SET = _IEC0_INT4IE_MASK;
+    LAN8740_CLEAR_INTERRUPT();
+    LAN8740_ENABLE_INTERRUPT();
 
     PHYWrite(LAN8740_REG_INTERRUPT_MASK, LAN8740_INT_AUTO_NEG_COMPLETE | LAN8740_INT_LINK_DOWN);
 }
 
 void PHYDisableInterrupt(void)
 {
-    IEC0CLR = _IEC0_INT4IE_MASK;
+    LAN8740_DISABLE_INTERRUPT();
 }
 
 void PHYGetStatus(phy_status_t *pStatus)
@@ -225,7 +221,8 @@ phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
 
 void PHYInterruptHandler(void)
 {
-    IEC0CLR = _IEC0_INT4IE_MASK;
+    LAN8740_CLEAR_INTERRUPT();
+    LAN8740_DISABLE_INTERRUPT();
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
 
@@ -248,7 +245,7 @@ void PHYDeferredInterruptHandler(void)
 {
     uint16_t intSource = PHYRead(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
 
-    IFS0CLR = _IFS0_INT4IF_MASK;
+    LAN8740_CLEAR_INTERRUPT();
 
     if(g_interfaceState == ETH_NORMAL)
     {
@@ -263,7 +260,7 @@ void PHYDeferredInterruptHandler(void)
         }
     }
 
-    IEC0SET = _IEC0_INT4IE_MASK;
+    LAN8740_ENABLE_INTERRUPT();
 }
 
 bool PHYSupportsWOL(void)
@@ -273,14 +270,14 @@ bool PHYSupportsWOL(void)
 
 void PHYPrepareWakeOnLAN(void)
 {
-    IEC0CLR = _IEC0_INT4IE_MASK;
+    LAN8740_DISABLE_INTERRUPT();
 
     uint16_t wucsr = PHY_MMDRead(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_WAKEUP_CTRL_STATUS);
     PHY_MMDWrite(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_WAKEUP_CTRL_STATUS, wucsr | LAN8740_MMD_PCS_WUCSR_MAGIC_PACKET_EN);
 
     PHYWrite(LAN8740_REG_INTERRUPT_MASK, LAN8740_INT_WOL);
-    
+
     PHYRead(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
-    IFS0CLR = _IFS0_INT4IF_MASK;
-    IEC0SET = _IEC0_INT4IE_MASK;
+    LAN8740_CLEAR_INTERRUPT();
+    LAN8740_ENABLE_INTERRUPT();
 }
