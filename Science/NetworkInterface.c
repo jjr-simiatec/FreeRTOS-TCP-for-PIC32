@@ -139,15 +139,15 @@ static bool ExecuteSelfTests(void);
 static NetworkBufferDescriptor_t *pxDebugGetNetworkBufferWithDescriptor(size_t xRequestedSizeBytes, TickType_t xBlockTimeTicks)
 {
     NetworkBufferDescriptor_t *p = pxGetNetworkBufferWithDescriptor(xRequestedSizeBytes, xBlockTimeTicks);
-    
+
     if( !p )
         return NULL;
-    
+
     NetworkBufferDescriptor_t *q = pxPacketBuffer_to_NetworkBuffer(p->pucEthernetBuffer);
-    
+
     if(p != q)
         __builtin_software_breakpoint();
-    
+
     return p;
 }
 
@@ -366,7 +366,7 @@ void MACConfigure(phy_speed_t speed, bool fullDuplex)
 BaseType_t xNetworkInterfaceInitialise(void)
 {
     if( !g_hEthernetTask )
-    {        
+    {
         // First time through
         g_hLinkUpSemaphore = xSemaphoreCreateBinary();
         s_hTxDMABufCountSemaphore = xSemaphoreCreateCounting(ipconfigPIC32_TX_DMA_DESCRIPTORS, ipconfigPIC32_TX_DMA_DESCRIPTORS);
@@ -379,6 +379,12 @@ BaseType_t xNetworkInterfaceInitialise(void)
 
         xTaskCreate(&EthernetTask, "EthDrv", ipconfigPIC32_DRV_TASK_STACK_SIZE, NULL, ipconfigPIC32_DRV_TASK_PRIORITY, &g_hEthernetTask);
         configASSERT(g_hEthernetTask);
+
+        const uint8_t *pMacAddr = FreeRTOS_GetMACAddress();
+
+        EMAC1SA0 = pMacAddr[4] | (pMacAddr[5] << 8);
+        EMAC1SA1 = pMacAddr[2] | (pMacAddr[3] << 8);
+        EMAC1SA2 = pMacAddr[0] | (pMacAddr[1] << 8);
 
         if(g_interfaceState != ETH_NORMAL)
         {
@@ -498,12 +504,12 @@ BaseType_t xNetworkInterfaceOutput(NetworkBufferDescriptor_t * const pxNetworkBu
 void vNetworkInterfaceAllocateRAMToBuffers( NetworkBufferDescriptor_t pxNetworkBuffers[ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS] )
 {
     memset(s_tNetworkBuffers, 0xBB, sizeof(s_tNetworkBuffers));
-    
+
     size_t c;
     for(c = 0; c < ipconfigNUM_NETWORK_BUFFER_DESCRIPTORS; c++)
     {
         volatile uint8_t *pBuffer = &s_tNetworkBuffers[c][0];
-        
+
         pxNetworkBuffers[c].pucEthernetBuffer = (uint8_t *) (pBuffer + ipBUFFER_PADDING);
 
         // The need for the following will be removed in a future version of the stack
