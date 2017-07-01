@@ -493,7 +493,10 @@ void TestWOL(void)
         return;
     }
 
-    printf("\r\nGoing to zzzzzzz...");
+    printf("\r\nMAC is %02X:%02X:%02X:%02X:%02X:%02X, going to zzzzzzz...",
+           EMAC1SA2 & 0xFF, (EMAC1SA2 >> 8) & 0xFF,
+           EMAC1SA1 & 0xFF, (EMAC1SA1 >> 8) & 0xFF,
+           EMAC1SA0 & 0xFF, (EMAC1SA0 >> 8) & 0xFF);
 
     Uart2Flush();
 
