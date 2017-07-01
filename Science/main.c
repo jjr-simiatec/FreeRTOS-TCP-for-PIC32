@@ -61,6 +61,8 @@ static const uint8_t pNET_MASK[ipIP_ADDRESS_LENGTH_BYTES] = {255, 255, 255, 0};
 static const uint8_t pGATEWAY_ADDRESS[ipIP_ADDRESS_LENGTH_BYTES] = {10, 10, 10, 1};
 static const uint8_t pDNS_ADDRESS[ipIP_ADDRESS_LENGTH_BYTES] = {10, 10, 10, 1};
 
+static const uint8_t pDEVEL_MAC_ADDR[ipMAC_ADDRESS_LENGTH_BYTES] = {0x02, 'W', 'o', 'o', 'f', '!'};
+
 static void HardwareConfigurePerformance(void);
 static void HardwareUseMultiVectoredInterrupts(void);
 static void HardwareConfigPeripherals(void);
@@ -119,11 +121,16 @@ int main(int argc, char *argv[])
     xTaskCreate(&Task2, "Task2", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask2);
     xTaskCreate(&PacketTask, "PacketTx", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 4, &g_hPacketTask);
 
+
+#if defined(__PIC32MZ__) && (__PIC32_FEATURE_SET0 == 'D')
+    FreeRTOS_IPInit(pIP_ADDRESS, pNET_MASK, pGATEWAY_ADDRESS, pDNS_ADDRESS, pDEVEL_MAC_ADDR);
+#else
     uint8_t tMacAddr[ipMAC_ADDRESS_LENGTH_BYTES] = {EMAC1SA2bits.STNADDR1, EMAC1SA2bits.STNADDR2,
                                                     EMAC1SA1bits.STNADDR3, EMAC1SA1bits.STNADDR4,
                                                     EMAC1SA0bits.STNADDR5, EMAC1SA0bits.STNADDR6};
 
     FreeRTOS_IPInit(pIP_ADDRESS, pNET_MASK, pGATEWAY_ADDRESS, pDNS_ADDRESS, tMacAddr);
+#endif
 
     vTaskStartScheduler();
 
