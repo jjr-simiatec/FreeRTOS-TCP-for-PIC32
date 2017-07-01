@@ -13,6 +13,7 @@ $
 |   \---nbproject
 +---include
 |   +---MX_795
+|   +---MZ_DAB
 |   +---MZ_ECM
 |   \---MZ_EFM
 +---RTOS
@@ -28,6 +29,7 @@ To use the source code as-is, you need one of the following Starter Kits:
 PIC32 Ethernet Starter Kit, Microchip part no. DM320004.  
 PIC32MZ EC Starter Kit w/ Crypto Engine, Microchip part no. DM320006-C.  
 PIC32MZ Embedded Connectivity with FPU (EF) Start Kit (Crypto), Microchip part no. DM320007-C.  
+PIC32MZ Embedded Graphics with External DRAM (DA) Starter Kit (Crypto), Microchip part no. DM320008-C.  
 
 [**Note**: the source code should compile and run on the non-crypto variants of the PIC32MZ Starter Kits but project settings will need to be changed.]
 
@@ -50,7 +52,7 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 
 2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
 
-3. For each project, select the required configuration and then build. The available configurations are `MZ_EFM`, `MZ_ECM` and `MX_795` corresponding to the microcontroller type on each Starter Kit.
+3. For each project, select the required configuration and then build. The available configurations are `MZ_DAB`, `MZ_EFM`, `MZ_ECM` and `MX_795` corresponding to the microcontroller type on each Starter Kit.
 
 4. Finally, load the project called `Science`. Again, select the required configuration and build. Use the Run command in the IDE to program the microcontroller.
 
