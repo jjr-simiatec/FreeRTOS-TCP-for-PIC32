@@ -242,6 +242,17 @@ void ViewPHYRegisters(void)
     bool bExit = false, bRegenDisplay = true;
     int c;
 
+    int phyaddr;
+
+    ShowTestTitle("PHY REGISTERS");
+
+    printf("PHY Address? ");
+    if( !InputIntValue(3, (char *) g_pTestBuffer, &phyaddr)
+        || (phyaddr < 0) || (phyaddr > 31))
+    {
+        return;
+    }
+
     do
     {
         if( bRegenDisplay )
@@ -258,7 +269,7 @@ void ViewPHYRegisters(void)
 
         for(c = 0; c < _countof(nVALID_PHY_REGS); c++)
         {
-            printf("\x1B[%d;%dH0x%04X", 3 + (c / 2), c & 1 ? 68 : 30, PHYRead(nVALID_PHY_REGS[c]));
+            printf("\x1B[%d;%dH0x%04X", 3 + (c / 2), c & 1 ? 68 : 30, PHYRead(phyaddr, nVALID_PHY_REGS[c]));
         }
 
         c = WaitForAKeyPress(0);
@@ -272,10 +283,10 @@ void ViewPHYRegisters(void)
             case 'R':
 #if defined(__PIC32MZ__)
                 // Hardware reset the PHY
-                LAN8740_ASSERT_HW_RESET();
+                PHY_ASSERT_HW_RESET();
                 printf("\r\nReset asserted, press a key to continue.");
                 WaitForAKeyPress(portMAX_DELAY);
-                LAN8740_CLEAR_HW_RESET();
+                PHY_CLEAR_HW_RESET();
 #endif
                 break;
 
@@ -296,7 +307,7 @@ void ViewPHYRegisters(void)
                         break;
                     }
 
-                    PHYWrite(addr, value);
+                    PHYWrite(phyaddr, addr, value);
                 }
 
                 break;
@@ -318,7 +329,7 @@ void ViewPHYRegisters(void)
                         break;
                     }
 
-                    PHY_MMDRead(devad, index);
+                    PHY_MMDRead(phyaddr, devad, index);
                 }
                 break;
 
@@ -450,7 +461,7 @@ void PingAddress(void)
         return;
     }
 
-    printf("\r\nPing sent with sequence no. %d, waiting for reply...", result);
+    printf("\r\nPing sent with sequence no. %ld, waiting for reply...", result);
 
     if( ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(1000)) == 0 )
     {
