@@ -12,6 +12,8 @@
       <itemPath>DP83848.h</itemPath>
       <itemPath>PIC32Arch.h</itemPath>
       <itemPath>EthernetPrivate.h</itemPath>
+      <itemPath>LAN9303.h</itemPath>
+      <itemPath>HardwareProfile.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -70,7 +72,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.43</languageToolchainVersion>
+        <languageToolchainVersion>1.44</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -119,7 +121,7 @@
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
-        <property key="preprocessor-macros" value=""/>
+        <property key="preprocessor-macros" value="PHY_LAN8740A"/>
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
@@ -567,7 +569,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.43</languageToolchainVersion>
+        <languageToolchainVersion>1.44</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -616,7 +618,7 @@
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
-        <property key="preprocessor-macros" value=""/>
+        <property key="preprocessor-macros" value="PHY_LAN8740A"/>
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
@@ -757,6 +759,7 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="memories.configurationmemory" value="true"/>
         <property key="memories.dataflash" value="true"/>
         <property key="memories.eeprom" value="true"/>
@@ -1064,7 +1067,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>SKDEPIC32PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.43</languageToolchainVersion>
+        <languageToolchainVersion>1.44</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -1129,7 +1132,7 @@
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
-        <property key="preprocessor-macros" value=""/>
+        <property key="preprocessor-macros" value="PHY_DP83848"/>
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
@@ -1594,7 +1597,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.43</languageToolchainVersion>
+        <languageToolchainVersion>1.44</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -1639,11 +1642,11 @@
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
-        <property key="optimization-level" value=""/>
+        <property key="optimization-level" value="-O1"/>
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
-        <property key="preprocessor-macros" value=""/>
+        <property key="preprocessor-macros" value="PHY_LAN9303"/>
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
@@ -1743,7 +1746,7 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include"/>
+                  value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-CLI;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_TCP_Demos\include;..\FreeRTOS-Plus\Demo\Common\FreeRTOS_Plus_CLI_Demos\include"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
         <property key="relaxed-math" value="false"/>
@@ -2103,9 +2106,9 @@
         <targetDevice>PIC32MZ2064DAB288</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PKOBSKDEPlatformTool</platformTool>
+        <platformTool>Simulator</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.43</languageToolchainVersion>
+        <languageToolchainVersion>1.44</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -2154,7 +2157,7 @@
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
-        <property key="preprocessor-macros" value=""/>
+        <property key="preprocessor-macros" value="PHY_LAN8740A"/>
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
@@ -2323,7 +2326,6 @@
         <property key="oscillator.frequencyunit" value="Mega"/>
         <property key="oscillator.rcfrequency" value="250"/>
         <property key="oscillator.rcfrequencyunit" value="Kilo"/>
-        <property key="performancedata.show" value="false"/>
         <property key="periphADC1.altscl" value="false"/>
         <property key="periphADC1.minTacq" value=""/>
         <property key="periphADC1.tacqunits" value="microseconds"/>
@@ -2403,9 +2405,51 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0015_CORE_INVALID_ALT_WREG_SET"
                   value="report"/>
-        <property key="warningmessagebreakoptions.W0016_BSLIM_INSUFFICIENT_BOOT_SEGMENT"
+        <property key="warningmessagebreakoptions.W0016_CORE_STACK_ERROR"
                   value="report"/>
-        <property key="warningmessagebreakoptions.W0017_BSLIM_LIMITS_EXCEEDS_PROG_MEMORY"
+        <property key="warningmessagebreakoptions.W0017_CORE_ODD_RAMWORDACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0018_CORE_UNIMPLEMENTED_RAMACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0019_CORE_UNIMPLEMENTED_PROMACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0020_CORE_ACCESS_NOTIN_X_SPACE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0021_CORE_ACCESS_NOTIN_Y_SPACE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0022_CORE_XMODEND_LESS_XMODSRT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0023_CORE_YMODEND_LESS_YMODSRT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0024_CORE_BITREV_MOD_IS_ZERO"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0025_CORE_HARD_TRAP" value="report"/>
+        <property key="warningmessagebreakoptions.W0026_CORE_UNIMPLEMENTED_MEMORYACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0027_CORE_UNIMPLEMENTED_EDSACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0028_TBLRD_WORM_CONFIG_MEMORY"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0029_TBLRD_DEVICE_ID" value="report"/>
+        <property key="warningmessagebreakoptions.W0030_CORE_UNIMPLEMENTED_MEMORY_ACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0031_BSLIM_INSUFFICIENT_BOOT_SEGMENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0032_BSLIM_LIMITS_EXCEEDS_PROG_MEMORY"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0033_CORE_UNPREDICTABLE_OPCODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0034_CORE_UNALIGNED_MEMORY_ACCESS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0040_FPU_DIFF_CP10_CP11"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0041_FPU_ACCESS_DENIED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0042_FPU_PRIVILEGED_ACCESS_ONLY"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0043_FPU_CP_RESERVED_VALUE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0044_FPU_OUT_OF_RANGE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0051_INSTRUCTION_DIV_NOT_ENOUGH_REPEAT"
                   value="report"/>
@@ -2422,6 +2466,14 @@
         <property key="warningmessagebreakoptions.W0105_SIM_INVALID_FIELD"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0106_SIM_PERIPH_PARTIAL_SUPPORT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0107_SIM_NOT_SUPPORTED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0108_SIM_RESERVED_SETTING"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -2503,6 +2555,9 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0242_ADC_BG_INT_BEFORE_PWR"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
+        <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
@@ -2510,6 +2565,10 @@
         <property key="warningmessagebreakoptions.W0701_CLC_CLCOUT_AS_INPUT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0702_CLC_CIRCULAR_LOOP"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10001_RESERVED_IRQ_HANDLER_INVOKED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10002_UNSUPPORTED_CLK_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W1201_DATAFLASH_MEM_OUTSIDE_RANGE"
                   value="report"/>
@@ -2528,6 +2587,12 @@
         <property key="warningmessagebreakoptions.W1600_PPS_INVALID_MAP" value="report"/>
         <property key="warningmessagebreakoptions.W1601_PPS_INVALID_PIN_DESCRIPTION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W1800_PWM_TIMER_SELECTION_NOT_AVIALABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1801_PWM_TIMER_SELECTION_BAD_CLOCK_INPUT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W1802_PWM_TIMER_MISSING_PERSCALER_INFO"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W2001_INPUTCAPTURE_TMR3_UNAVAILABLE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W2002_INPUTCAPTURE_CAPTURE_EMPTY"
@@ -2542,11 +2607,17 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W2503_OUTPUTCOMPARE_BAD_TRIGGER_SOURCE"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W2700_MPU_ILLEGAL_DREGION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W2701_MPU_INVALID_REGION"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W7001_SMT_CLK_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7003_SMT_WIN_SELECTION_NOT_SUPPORT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W8001_OSC_INVALID_CLOCK_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9001_TMR_GATE_AND_EXTCLOCK_ENABLED"
                   value="report"/>
@@ -2577,6 +2648,10 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W9605_COMP_PRG_SOURCE_UNAVAILABLE"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W9607_COMP_DGTL_FLTR_OPTION_UNAVAILABLE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9609_COMP_DGTL_FLTR_CLK_UNAVAILABLE"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W9801_FVR_INVALID_MODE_SELECTION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9801_SCL_BAD_SUBTYPE_INDICATION"
@@ -2588,6 +2663,10 @@
         <property key="warningmessagebreakoptions.W9804_SCL_UNRECOGNIZED_LABEL"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9805_SCL_UNRECOGNIZED_VAR"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9901_RTSP_INVALID_OPERATION_SELECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9902_RTSP_FLASH_PROGRAM_WRITE_PROTECTED"
                   value="report"/>
         <property key="warningmessagebreakoptions.displaywarningmessagesoption"
                   value=""/>
