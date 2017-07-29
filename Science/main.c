@@ -67,7 +67,11 @@ static void HardwareConfigurePerformance(void);
 static void HardwareUseMultiVectoredInterrupts(void);
 static void HardwareConfigPeripherals(void);
 
-#if defined(__PIC32MZ__)
+#if defined(__PIC32MX__)
+
+void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_3_VECTOR) )) PHYInterruptWrapper(void);
+
+#elif defined(__PIC32MZ__)
 
 #if (__PIC32_FEATURE_SET0 == 'D')
 
@@ -178,7 +182,7 @@ void HardwareConfigurePerformance(void)
     ANSELJCLR = _ANSELJ_ANSJ8_MASK | _ANSELJ_ANSJ9_MASK | _ANSELJ_ANSJ11_MASK;
 
     // PPS and I/O for Ethernet PHY
-    LAN8740_ASSERT_HW_RESET();
+    PHY_CLEAR_HW_RESET();
     TRISHCLR = _TRISH_TRISH11_MASK; // nRST
     TRISCSET = _TRISC_TRISC13_MASK; // nINT
     INT4Rbits.INT4R = 0b0111;       // RPC13
@@ -222,7 +226,7 @@ void HardwareConfigurePerformance(void)
     SYSKEY_UNLOCK();
 
     // Disable unused peripherals (REFCLKs not disabled due to erratum #5)
-    PMD1SET = _PMD1_CVRMD_MASK;
+    PMD1SET = _PMD1_CTMUMD_MASK | _PMD1_CVRMD_MASK | _PMD1_LVDMD_MASK;
     PMD2SET = _PMD2_CMP1MD_MASK | _PMD2_CMP2MD_MASK;
     PMD3SET = (_PMD3_IC1MD_MASK | _PMD3_IC2MD_MASK | _PMD3_IC3MD_MASK
                | _PMD3_IC4MD_MASK | _PMD3_IC5MD_MASK | _PMD3_IC6MD_MASK
@@ -236,7 +240,8 @@ void HardwareConfigurePerformance(void)
                | _PMD5_SPI5MD_MASK | _PMD5_SPI6MD_MASK | _PMD5_I2C1MD_MASK
                | _PMD5_I2C2MD_MASK | _PMD5_I2C4MD_MASK | _PMD5_I2C5MD_MASK
                | _PMD5_CAN1MD_MASK | _PMD5_CAN2MD_MASK );
-    PMD6SET = (_PMD6_PMPMD_MASK | _PMD6_EBIMD_MASK);
+    PMD6SET = (_PMD6_PMPMD_MASK | _PMD6_EBIMD_MASK | _PMD6_GPUMD_MASK
+               | _PMD6_GLCDMD_MASK);
 
     // I/O configuration for UART2 [pins B0, G9] and I2C3 [pins F2, F8]
     ANSELBCLR = _ANSELB_ANSB0_MASK;
@@ -247,7 +252,7 @@ void HardwareConfigurePerformance(void)
     RPG9Rbits.RPG9R = 0b0010;   // U2TX
 
     // I/O configuration for Ethernet PHY
-    LAN8740_ASSERT_HW_RESET();
+    PHY_CLEAR_HW_RESET();
     ANSELBCLR = _ANSELB_ANSB11_MASK;
     TRISJCLR = _TRISJ_TRISJ15_MASK; // nRST
     TRISBSET = _TRISB_TRISB11_MASK; // nINT
@@ -329,6 +334,7 @@ void HardwareConfigurePerformance(void)
     // I/O for Ethernet PHY
     TRISASET = _TRISA_TRISA14_MASK;
     INTCONCLR = _INTCON_INT3EP_MASK;    // nINT active low so falling edge
+    IPC3bits.INT3IP = configKERNEL_INTERRUPT_PRIORITY;
 
     // I/O configuration for LEDs/switches
     TRISDCLR = 0x07;
