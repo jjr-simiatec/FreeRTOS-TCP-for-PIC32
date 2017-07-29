@@ -27,59 +27,68 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "PHYGeneric.h"
-
-extern SemaphoreHandle_t g_hLinkUpSemaphore;
-
-const uint16_t nPHY_ADDRESS = 0;
-
-void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_4_VECTOR) )) PHYInterruptWrapper(void);
+#include "LAN9303.h"
+#include "EthernetPrivate.h"
 
 void PHYInitialise(void)
 {
-    LATHSET = _LATH_LATH11_MASK;
+    uint32_t test = 0;
 
-    PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
+    // Wait for byte order test magic value
+    do
+    {
+        test = LAN9303ReadRegister(LAN9303_REG_BYTE_TEST);
+    }
+    while(test != LAN9303_BYTE_TEST_MAGIC);
 
-    while( PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
+    // Wait for device ready
+    do
+    {
+        test = LAN9303ReadRegister(LAN9303_REG_HW_CFG);
+    }
+    while((test & LAN9303_HW_CFG_READY) == 0);
 
+    uint32_t leds = LAN9303ReadRegister(LAN9303_REG_LED_CFG);
+
+    leds &= ~LAN9303_LED_CFG_FN_MASK;
+    leds |= (LAN9303_LED_CFG_LED0_ENABLE | LAN9303_LED_CFG_LED1_ENABLE
+             | LAN9303_LED_CFG_LED3_ENABLE | LAN9303_LED_CFG_LED4_ENABLE
+             | LAN9303_LED_CFG_FN_SPD_LNKACT);
+
+    LAN9303WriteRegister(LAN9303_REG_LED_CFG, leds);
+
+    // MAC is connected to the VPHY
+    PHY_WRITE(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
+
+    while( PHY_READ(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
+
+    // Force speed and duplex to max. for the VPHY
+    PHY_WRITE(PHY_REG_BASIC_CONTROL, PHY_CTRL_FULL_DUPLEX | PHY_CTRL_SPEED_100MBPS);
+
+    // Link is always up
     xSemaphoreGive(g_hLinkUpSemaphore);
 }
 
 void PHYGetStatus(phy_status_t *pStatus)
 {
-//    uint16_t linkStat = PHYRead(DP83848_REG_PHY_STATUS);
-
     pStatus->speed = PHY_SPEED_100MBPS;
     pStatus->fullDuplex = true;
 }
 
 void PHYInterruptHandler(void)
 {
-    IFS0CLR = _IFS0_INT4IF_MASK;
-
-//    uint16_t intSource = PHYRead(DP83848_REG_INTERRUPT_STATUS);
+    PHY_DISABLE_INTERRUPT();
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
 
-#if 0
-    if(intSource & (DP83848_MISR_AUTO_NEG_COMPLETE | DP83848_MISR_LINK_STATUS_CHANGE))
-    {
-        uint16_t status = PHYRead(DP83848_REG_PHY_STATUS);
-
-        if(status & DP83848_PHYSTS_LINK_ESTABLISHED)
-        {
-            xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
-        }
-        else
-        {
-            if( FreeRTOS_NetworkDownFromISR() )
-                bHigherPriorityTaskWoken = pdTRUE;
-        }
-    }
-#endif
+    xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
 
     portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+}
+
+void PHYDeferredInterruptHandler(void)
+{
+    // VPHY is always up
 }
 
 phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
@@ -94,4 +103,22 @@ bool PHYSupportsWOL(void)
 
 void PHYPrepareWakeOnLAN(void)
 {
+}
+
+uint32_t LAN9303ReadRegister(lan9303_register_t reg)
+{
+    uint8_t phyaddr = (reg >> 6) | 0x10, regaddr = (reg & 0x3C) >> 1;
+
+    uint16_t lsb = PHYRead(phyaddr, regaddr);
+    uint16_t msb = PHYRead(phyaddr, regaddr | 1);
+
+    return (msb << 16U) | lsb;
+}
+
+void LAN9303WriteRegister(lan9303_register_t reg, uint32_t val)
+{
+    uint8_t phyaddr = (reg >> 6) | 0x10, regaddr = (reg & 0x3C) >> 1;
+
+    PHYWrite(phyaddr, regaddr, val & 0xFFFFU);
+    PHYWrite(phyaddr, regaddr | 1, val >> 16U);
 }
