@@ -24,9 +24,11 @@
 
 #include "PHYGeneric.h"
 
-uint16_t PHYRead(uint8_t reg)
+uint16_t PHYRead(uint8_t phyaddr, uint8_t reg)
 {
-    EMAC1MADR = reg | nPHY_ADDRESS;
+    EMAC1MADR = (reg << _EMAC1MADR_REGADDR_POSITION)
+                 | (phyaddr << _EMAC1MADR_PHYADDR_POSITION);
+
     EMAC1MCMD = _EMAC1MCMD_READ_MASK;
 
     _sync();
@@ -41,9 +43,11 @@ uint16_t PHYRead(uint8_t reg)
     return EMAC1MRDD;
 }
 
-void PHYWrite(uint8_t reg, uint16_t val)
+void PHYWrite(uint8_t phyaddr, uint8_t reg, uint16_t val)
 {
-    EMAC1MADR = reg | nPHY_ADDRESS;
+    EMAC1MADR = (reg << _EMAC1MADR_REGADDR_POSITION)
+                 | (phyaddr << _EMAC1MADR_PHYADDR_POSITION);
+
     EMAC1MWTD = val;
 
     _sync();
@@ -54,18 +58,24 @@ void PHYWrite(uint8_t reg, uint16_t val)
 #endif
 }
 
-uint16_t PHY_MMDRead(uint8_t devad, uint16_t reg)
+uint16_t PHY_MMDRead(uint8_t phyaddr, uint8_t devad, uint16_t reg)
 {
-    PHYWrite(PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_ADDRESS | devad);
-    PHYWrite(PHY_REG_MMD_ACCESS_ADDRESS_DATA, reg);
-    PHYWrite(PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_DATA | devad);
-    return PHYRead(PHY_REG_MMD_ACCESS_ADDRESS_DATA);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_ADDRESS | devad);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_ADDRESS_DATA, reg);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_DATA | devad);
+    return PHYRead(phyaddr, PHY_REG_MMD_ACCESS_ADDRESS_DATA);
 }
 
-void PHY_MMDWrite(uint8_t devad, uint16_t reg, uint16_t val)
+void PHY_MMDWrite(uint8_t phyaddr, uint8_t devad, uint16_t reg, uint16_t val)
 {
-    PHYWrite(PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_ADDRESS | devad);
-    PHYWrite(PHY_REG_MMD_ACCESS_ADDRESS_DATA, reg);
-    PHYWrite(PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_DATA | devad);
-    PHYWrite(PHY_REG_MMD_ACCESS_ADDRESS_DATA, val);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_ADDRESS | devad);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_ADDRESS_DATA, reg);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_CONTROL, PHY_MMDCTRL_ACTYPE_DATA | devad);
+    PHYWrite(phyaddr, PHY_REG_MMD_ACCESS_ADDRESS_DATA, val);
+}
+
+void PHYGenericPowerDown(uint8_t phyaddr)
+{
+    uint16_t bcr = PHYRead(phyaddr, PHY_REG_BASIC_CONTROL);
+    PHYWrite(phyaddr, PHY_REG_BASIC_CONTROL, bcr | PHY_CTRL_POWER_DOWN);
 }

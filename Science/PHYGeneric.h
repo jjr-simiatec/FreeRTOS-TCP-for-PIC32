@@ -19,6 +19,8 @@
 #ifndef PHYGENERIC_H
 #define	PHYGENERIC_H
 
+#include "HardwareProfile.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -160,17 +162,22 @@ typedef enum {
     PHY_TDR_STATE_OPEN
 } phy_tdr_state_t;
 
-extern const uint16_t nPHY_ADDRESS;
+#define PHY_READ(reg)           PHYRead(PHY_ADDRESS, reg)
+#define PHY_WRITE(reg, val)     PHYWrite(PHY_ADDRESS, reg, val)
+
+#define PHY_MMD_READ(devad, reg)        PHY_MMDRead(PHY_ADDRESS, devad, reg)
+#define PHY_MMD_WRITE(devad, reg, val)  PHY_MMDWrite(PHY_ADDRESS, devad, reg, val)
 
 extern void PHYInitialise(void);
 extern bool PHYSupportsWOL(void);
 extern void PHYPrepareWakeOnLAN(void);
-extern void PHYDisableInterrupt(void);
 extern void PHYDeferredInterruptHandler(void);
-extern uint16_t PHYRead(uint8_t reg);
-extern void PHYWrite(uint8_t reg, uint16_t val);
-extern inline uint16_t PHY_MMDRead(uint8_t devad, uint16_t reg);
-extern inline void PHY_MMDWrite(uint8_t devad, uint16_t reg, uint16_t val);
+
+extern uint16_t PHYRead(uint8_t phyaddr, uint8_t reg);
+extern void PHYWrite(uint8_t phyaddr, uint8_t reg, uint16_t val);
+extern inline uint16_t PHY_MMDRead(uint8_t phyaddr, uint8_t devad, uint16_t reg);
+extern inline void PHY_MMDWrite(uint8_t phyaddr, uint8_t devad, uint16_t reg, uint16_t val);
+
 extern void PHYGetStatus(phy_status_t *pStatus);
 extern phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate);
 
