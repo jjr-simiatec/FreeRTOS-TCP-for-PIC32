@@ -30,35 +30,22 @@
 #include "EthernetPrivate.h"
 #include "DP83848.h"
 
-extern SemaphoreHandle_t g_hLinkUpSemaphore;
-
-const uint16_t nPHY_ADDRESS = (1 << _EMAC1MADR_PHYADDR_POSITION);
-
-void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_3_VECTOR) )) PHYInterruptWrapper(void);
-
 void PHYInitialise(void)
 {
-    PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
+    PHY_WRITE(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
 
-    while( PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
+    while( PHY_READ(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
 
-    IPC3bits.INT3IP = configKERNEL_INTERRUPT_PRIORITY;
+    PHY_CLEAR_INTERRUPT();
+    PHY_ENABLE_INTERRUPT();
 
-    IFS0CLR = _IFS0_INT3IF_MASK;
-    IEC0SET = _IEC0_INT3IE_MASK;
-
-    PHYWrite(DP83848_REG_INTERRUPT_CONTROL, DP83848_MICR_INTERRUPT_ENABLE | DP83848_MICR_INTERRUPT_OUTPUT_ENABLE);
-    PHYWrite(DP83848_REG_INTERRUPT_STATUS, DP83848_MISR_ENABLE_AUTO_NEG_COMPLETE_INT | DP83848_MISR_ENABLE_LINK_CHANGE_INT);
-}
-
-void PHYDisableInterrupt(void)
-{
-    IEC0CLR = _IEC0_INT3IE_MASK;
+    PHY_WRITE(DP83848_REG_INTERRUPT_CONTROL, DP83848_MICR_INTERRUPT_ENABLE | DP83848_MICR_INTERRUPT_OUTPUT_ENABLE);
+    PHY_WRITE(DP83848_REG_INTERRUPT_STATUS, DP83848_MISR_ENABLE_AUTO_NEG_COMPLETE_INT | DP83848_MISR_ENABLE_LINK_CHANGE_INT);
 }
 
 void PHYGetStatus(phy_status_t *pStatus)
 {
-    uint16_t linkStat = PHYRead(DP83848_REG_PHY_STATUS);
+    uint16_t linkStat = PHY_READ(DP83848_REG_PHY_STATUS);
 
     pStatus->speed = linkStat & DP83848_PHYSTS_SPEED_10MBPS ? PHY_SPEED_10MBPS : PHY_SPEED_100MBPS;
     pStatus->fullDuplex = (linkStat & DP83848_PHYSTS_FULL_DUPLEX) != 0;
@@ -66,10 +53,10 @@ void PHYGetStatus(phy_status_t *pStatus)
 
 void PHYInterruptHandler(void)
 {
-    IEC0CLR = _IEC0_INT3IE_MASK;
+    PHY_DISABLE_INTERRUPT();
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
-    
+
     xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
 
     portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
@@ -77,13 +64,12 @@ void PHYInterruptHandler(void)
 
 void PHYDeferredInterruptHandler(void)
 {
-    uint16_t intSource = PHYRead(DP83848_REG_INTERRUPT_STATUS);
-
-    IFS0CLR = _IFS0_INT3IF_MASK;
+    uint16_t intSource = PHY_READ(DP83848_REG_INTERRUPT_STATUS);
+    PHY_CLEAR_INTERRUPT();
 
     if(intSource & (DP83848_MISR_AUTO_NEG_COMPLETE | DP83848_MISR_LINK_STATUS_CHANGE))
     {
-        uint16_t status = PHYRead(DP83848_REG_PHY_STATUS);
+        uint16_t status = PHY_READ(DP83848_REG_PHY_STATUS);
 
         if(status & DP83848_PHYSTS_LINK_ESTABLISHED)
             xSemaphoreGive(g_hLinkUpSemaphore);
@@ -91,7 +77,7 @@ void PHYDeferredInterruptHandler(void)
             FreeRTOS_NetworkDown();
     }
 
-    IEC0SET = _IEC0_INT3IE_MASK;
+    PHY_ENABLE_INTERRUPT();
 }
 
 phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)

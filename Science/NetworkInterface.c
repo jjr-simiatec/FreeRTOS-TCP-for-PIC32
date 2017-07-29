@@ -136,6 +136,8 @@ static bool ExecuteSelfTests(void);
     result; \
 }) \
 
+#ifdef __DEBUG
+
 static NetworkBufferDescriptor_t *pxDebugGetNetworkBufferWithDescriptor(size_t xRequestedSizeBytes, TickType_t xBlockTimeTicks)
 {
     NetworkBufferDescriptor_t *p = pxGetNetworkBufferWithDescriptor(xRequestedSizeBytes, xBlockTimeTicks);
@@ -152,6 +154,8 @@ static NetworkBufferDescriptor_t *pxDebugGetNetworkBufferWithDescriptor(size_t x
 }
 
 //#define pxGetNetworkBufferWithDescriptor pxDebugGetNetworkBufferWithDescriptor
+
+#endif
 
 static inline void SwapPacketBuffers(NetworkBufferDescriptor_t *pFirst, NetworkBufferDescriptor_t *pSecond)
 {
@@ -395,7 +399,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
     else
     {
         DISABLE_INTERRUPT();
-        PHYDisableInterrupt();
+        PHY_DISABLE_INTERRUPT();
 
         // Link failed/stack reset
         s_tStats.linkFailures++;
@@ -613,8 +617,8 @@ void PowerdownEthernet(void)
     ETHCON1CLR = _ETHCON1_RXEN_MASK | _ETHCON1_TXRTS_MASK;
     while( ETHSTATbits.RXBUSY || ETHSTATbits.TXBUSY );
 
-    uint16_t bcr = PHYRead(PHY_REG_BASIC_CONTROL);
-    PHYWrite(PHY_REG_BASIC_CONTROL, bcr | PHY_CTRL_POWER_DOWN);
+    uint16_t bcr = PHY_READ(PHY_REG_BASIC_CONTROL);
+    PHY_WRITE(PHY_REG_BASIC_CONTROL, bcr | PHY_CTRL_POWER_DOWN);
 
     ETHCON1CLR = _ETHCON1_ON_MASK;
     while( ETHSTATbits.ETHBUSY );
@@ -678,16 +682,16 @@ bool ExecuteSelfTests(void)
     ControllerInitialise();
 
     // Fix PHY and MAC to operate at 100Mbps full duplex and put the loopback at the PHY
-    PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
+    PHY_WRITE(PHY_REG_BASIC_CONTROL, PHY_CTRL_RESET);
 
-    if( !TEST_IF_TRUE_WITH_RETRY( (PHYRead(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET) == 0, SELF_TEST_RETRY_COUNT ) )
+    if( !TEST_IF_TRUE_WITH_RETRY( (PHY_READ(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET) == 0, SELF_TEST_RETRY_COUNT ) )
     {
         return false;
     }
 
-    PHYWrite(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
+    PHY_WRITE(PHY_REG_BASIC_CONTROL, PHY_CTRL_SPEED_100MBPS | PHY_CTRL_FULL_DUPLEX | PHY_CTRL_LOOPBACK);
 
-    if( !TEST_IF_TRUE_WITH_RETRY( PHYRead(PHY_REG_BASIC_STATUS) & PHY_STAT_LINK_IS_UP, SELF_TEST_RETRY_COUNT ) )
+    if( !TEST_IF_TRUE_WITH_RETRY( PHY_READ(PHY_REG_BASIC_STATUS) & PHY_STAT_LINK_IS_UP, SELF_TEST_RETRY_COUNT ) )
     {
         return false;
     }
