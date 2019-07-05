@@ -1,7 +1,7 @@
 /*
  * PIC32 Architecture Helpers
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -52,9 +52,9 @@ extern "C" {
                  "    nop\n" \
                  "2:  \n" \
                  ".set reorder" \
-                 : "+m"(*d), "=r"(val) \
+                 : "+m"(*d), "=&r"(val) \
                  : "r"(c), "r"(e) \
-                 : "t0"); \
+                 : "t0", "cc"); \
     val; \
 })
 
