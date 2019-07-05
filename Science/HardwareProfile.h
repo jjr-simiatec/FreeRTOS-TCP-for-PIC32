@@ -1,7 +1,7 @@
 /*
  * Shared Board Specific Definitions
  *
- * Copyright (c) 2017 John Robertson
+ * Copyright (c) 2017-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -27,6 +27,8 @@
 #define PHY_DISABLE_INTERRUPT() IEC0CLR = _IEC0_INT3IE_MASK
 #define PHY_CLEAR_INTERRUPT()   IFS0CLR = _IFS0_INT3IF_MASK
 
+#define PHY_INTERRUPT_VECTOR    _EXTERNAL_3_VECTOR
+
 #elif defined(__PIC32MZ__)
 
 #if (__PIC32_FEATURE_SET0 == 'E')
@@ -37,13 +39,23 @@
 #define PHY_DISABLE_INTERRUPT() IEC0CLR = _IEC0_INT4IE_MASK
 #define PHY_CLEAR_INTERRUPT()   IFS0CLR = _IFS0_INT4IF_MASK
 
+#define PHY_INTERRUPT_VECTOR    _EXTERNAL_4_VECTOR
+
+#if (__PIC32_FEATURE_SET1 == 'F')
+#define PIC32_HAS_WORKING_TRNG
+#endif
+
 #elif (__PIC32_FEATURE_SET0 == 'D')
 
 #define PHY_ASSERT_HW_RESET()   LATJCLR = _LATJ_LATJ15_MASK
 #define PHY_CLEAR_HW_RESET()    LATJSET = _LATJ_LATJ15_MASK
-#define PHY_ENABLE_INTERRUPT()  CNNEBSET = _CNNEB_CNNEB11_MASK
-#define PHY_DISABLE_INTERRUPT() CNNEBCLR = _CNNEB_CNNEB11_MASK
+#define PHY_ENABLE_INTERRUPT()  IEC3SET = _IEC3_CNBIE_MASK
+#define PHY_DISABLE_INTERRUPT() IEC3CLR = _IEC3_CNBIE_MASK
 #define PHY_CLEAR_INTERRUPT()   {CNFBCLR = _CNFB_CNFB11_MASK; IFS3CLR = _IFS3_CNBIF_MASK;}
+
+#define PHY_INTERRUPT_VECTOR    _CHANGE_NOTICE_B_VECTOR
+
+#define PIC32_HAS_WORKING_TRNG
 
 #endif
 
