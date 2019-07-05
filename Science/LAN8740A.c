@@ -1,7 +1,7 @@
 /*
  * LAN8740A PHY Driver
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -210,34 +210,14 @@ phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
     return state;
 }
 
-void PHYInterruptHandler(void)
-{
-    PHY_DISABLE_INTERRUPT();
-
-    BaseType_t bHigherPriorityTaskWoken = pdFALSE;
-
-    if(g_interfaceState == ETH_NORMAL)
-    {
-        xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
-    }
-    else if(g_interfaceState == ETH_WAKE_ON_LAN)
-    {
-        if(InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN_WOKEN, ETH_WAKE_ON_LAN) == ETH_WAKE_ON_LAN)
-        {
-            xSemaphoreGiveFromISR(g_hLinkUpSemaphore, &bHigherPriorityTaskWoken);
-        }
-    }
-
-    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
-}
-
 void PHYDeferredInterruptHandler(void)
 {
     uint16_t intSource = PHY_READ(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
     PHY_CLEAR_INTERRUPT();
 
-    if(g_interfaceState == ETH_NORMAL)
+    switch( g_interfaceState )
     {
+    case ETH_NORMAL:
         if(intSource & (LAN8740_INT_AUTO_NEG_COMPLETE | LAN8740_INT_LINK_DOWN))
         {
             uint16_t bs = PHY_READ(PHY_REG_BASIC_STATUS);
@@ -247,6 +227,17 @@ void PHYDeferredInterruptHandler(void)
             else
                 FreeRTOS_NetworkDown();
         }
+
+        break;
+
+    case ETH_WAKE_ON_LAN_WOKEN:
+    case ETH_POWER_DOWN:
+    case ETH_SELF_TEST:
+        xSemaphoreGive(g_hLinkUpSemaphore);
+        break;
+
+    default:
+        ;
     }
 
     PHY_ENABLE_INTERRUPT();

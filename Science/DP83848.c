@@ -1,7 +1,7 @@
 /*
  * DP83848 PHY Driver
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -49,17 +49,6 @@ void PHYGetStatus(phy_status_t *pStatus)
 
     pStatus->speed = linkStat & DP83848_PHYSTS_SPEED_10MBPS ? PHY_SPEED_10MBPS : PHY_SPEED_100MBPS;
     pStatus->fullDuplex = (linkStat & DP83848_PHYSTS_FULL_DUPLEX) != 0;
-}
-
-void PHYInterruptHandler(void)
-{
-    PHY_DISABLE_INTERRUPT();
-
-    BaseType_t bHigherPriorityTaskWoken = pdFALSE;
-
-    xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
-
-    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
 }
 
 void PHYDeferredInterruptHandler(void)

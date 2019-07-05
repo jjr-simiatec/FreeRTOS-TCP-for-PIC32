@@ -1,7 +1,7 @@
 /*
  * Generic PHY Interface and Definitions
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -22,7 +22,12 @@
 // C Runtime
 #include <stdbool.h>
 
+#include "Ethernet.h"
+#include "EthernetPrivate.h"
 #include "PHYGeneric.h"
+#include "PIC32Arch.h"
+
+void __attribute__(( interrupt(IPL0AUTO), vector(PHY_INTERRUPT_VECTOR) )) PHYInterruptWrapper(void);
 
 uint16_t PHYRead(uint8_t phyaddr, uint8_t reg)
 {
@@ -78,4 +83,16 @@ void PHYGenericPowerDown(uint8_t phyaddr)
 {
     uint16_t bcr = PHYRead(phyaddr, PHY_REG_BASIC_CONTROL);
     PHYWrite(phyaddr, PHY_REG_BASIC_CONTROL, bcr | PHY_CTRL_POWER_DOWN);
+}
+
+void PHYInterruptHandler(void)
+{
+    PHY_DISABLE_INTERRUPT();
+
+    InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN_WOKEN, ETH_WAKE_ON_LAN);
+
+    BaseType_t bHigherPriorityTaskWoken = pdFALSE;
+    xTaskNotifyFromISR(g_hEthernetTask, ETH_TASK_PHY_INTERRUPT, eSetBits, &bHigherPriorityTaskWoken);
+
+    portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
 }
