@@ -1,7 +1,7 @@
 /*
  * Startup and Hardware Configuration
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -36,7 +36,7 @@
 
 #if defined(__PIC32MX__)
 
-#define PIC32MX_MAX_FLASH_SPEED   30000000UL
+#define PIC32MX_MAX_FLASH_SPEED     30000000UL
 
 #define CHECON_PREFEN_CACHEABLE     1
 #define CHECON_PREFEN_ALL_REGIONS   3
@@ -67,31 +67,7 @@ static void HardwareConfigurePerformance(void);
 static void HardwareUseMultiVectoredInterrupts(void);
 static void HardwareConfigPeripherals(void);
 
-#if defined(__PIC32MX__)
-
-void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_3_VECTOR) )) PHYInterruptWrapper(void);
-
-#elif defined(__PIC32MZ__)
-
-#if (__PIC32_FEATURE_SET0 == 'D')
-
-#define USE_TRNG
-
-void __attribute__(( interrupt(IPL0AUTO), vector(_CHANGE_NOTICE_B_VECTOR) )) PHYInterruptWrapper(void);
-
-#elif (__PIC32_FEATURE_SET0 == 'E')
-
-#if (__PIC32_FEATURE_SET1 == 'F')
-#define USE_TRNG
-#endif
-
-void __attribute__(( interrupt(IPL0AUTO), vector(_EXTERNAL_4_VECTOR) )) PHYInterruptWrapper(void);
-
-#endif
-
-#endif
-
-#if defined(USE_TRNG)
+#if defined(PIC32_HAS_WORKING_TRNG)
 
 extern uint32_t TRNGRead32(void);
 extern uint64_t TRNGRead64(void);
@@ -124,7 +100,6 @@ int main(int argc, char *argv[])
     xTaskCreate(&Task1, "Task1", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask1);
     xTaskCreate(&Task2, "Task2", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask2);
     xTaskCreate(&PacketTask, "PacketTx", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 4, &g_hPacketTask);
-
 
 #if defined(__PIC32MZ__) && (__PIC32_FEATURE_SET0 == 'D')
     FreeRTOS_IPInit(pIP_ADDRESS, pNET_MASK, pGATEWAY_ADDRESS, pDNS_ADDRESS, pDEVEL_MAC_ADDR);
@@ -221,6 +196,59 @@ void HardwareConfigurePerformance(void)
 
 #elif (__PIC32_FEATURE_SET0 == 'D')
 
+typedef struct {
+    unsigned quarters : 2;
+    unsigned units : 6;
+} quarter_nsec_t;
+
+#define QNSEC(f) (((uint8_t) f << 2) | ((uint8_t)(f * 4.0f) & 0x03))
+
+typedef struct {
+    uint16_t tRFC;
+    uint8_t tWR;
+    uint8_t tRP;
+    uint8_t tRCD;
+    uint8_t tRRD;
+    uint8_t tWTR;
+    uint8_t tRTP;
+    uint8_t tDLLK;
+    uint8_t tRAS;
+    uint16_t tRC;
+    uint8_t tFAW;
+    uint8_t tMRD;
+    uint8_t tXP;
+    uint8_t tCKE;
+    uint8_t RL;
+    uint8_t tRFI;
+    uint8_t WL;
+    uint8_t BL;
+} sdram_timing_params_t;
+
+static const sdram_timing_params_t tCONTROLLER_MINIMUMS = {
+    0,
+    QNSEC(25.0),
+    QNSEC(20.0),
+    QNSEC(20.0),
+    QNSEC(10.0),
+    QNSEC(10.0),
+    QNSEC(10.0)
+};
+
+static const sdram_timing_params_t tMT47H64M16NF_25E = {
+    0,
+    QNSEC(15.0),
+    QNSEC(12.5),
+    QNSEC(12.5),
+    QNSEC(10.0),
+    QNSEC( 7.5),
+    QNSEC( 7.5)
+};
+
+void DDR2_Configure(const sdram_timing_params_t *p)
+{
+    _nop();
+}
+
 void HardwareConfigurePerformance(void)
 {
     SYSKEY_UNLOCK();
@@ -258,10 +286,8 @@ void HardwareConfigurePerformance(void)
     TRISBSET = _TRISB_TRISB11_MASK; // nINT
 
     CNCONBSET = _CNCONB_ON_MASK | _CNCONB_EDGEDETECT_MASK;
+    CNNEBSET = _CNNEB_CNNEB11_MASK;
     IPC29bits.CNBIP = configKERNEL_INTERRUPT_PRIORITY;
-
-    IFS3CLR = _IFS3_CNBIF_MASK;
-    IEC3SET = _IEC3_CNBIE_MASK;
 
     // I/O configuration for LEDs/switches
     ANSELBCLR = _ANSELB_ANSB12_MASK | _ANSELB_ANSB13_MASK | _ANSELB_ANSB14_MASK;
@@ -287,6 +313,8 @@ void HardwareConfigurePerformance(void)
     PRECONbits.PREFEN = 3;  // Enable predictive prefetch for any address
 
     SYSKEY_LOCK();
+
+    DDR2_Configure(&tMT47H64M16NF_25E);
 }
 
 #else
@@ -383,7 +411,7 @@ void HardwareUseMultiVectoredInterrupts(void)
 
 void HardwareConfigPeripherals(void)
 {
-#if defined(USE_TRNG)
+#if defined(PIC32_HAS_WORKING_TRNG)
     // Enable TRNG
     RNGCONbits.TRNGEN = 1;
 
@@ -405,7 +433,7 @@ time_t FreeRTOS_time(time_t *pxTime)
     return time(pxTime);
 }
 
-#if defined(USE_TRNG)
+#if defined(PIC32_HAS_WORKING_TRNG)
 
 uint32_t TRNGRead32(void)
 {
