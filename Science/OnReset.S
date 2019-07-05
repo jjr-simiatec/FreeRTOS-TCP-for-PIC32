@@ -37,15 +37,19 @@
 #define DATA_MEM_BASE __KSEG1_DATA_MEM_BASE
 #define DATA_MEM_LENGTH __KSEG1_DATA_MEM_LENGTH
 
-    .equiv  CHECON_PREFEN_ALL_REGIONS, 3
-    .equiv  CHECON_WAIT_STATES, 2
-    .equiv  CP0_CONFIG_K0_CACHEABLE, 3
-
 #else
 
 #error Unsupported processor!
 
 #endif
+
+#endif
+
+#if defined(__PIC32MX__)
+
+    .equiv  CHECON_PREFEN_ALL_REGIONS, 3
+    .equiv  CHECON_WAIT_STATES, 2
+    .equiv  CP0_CONFIG_K0_CACHEABLE, 3
 
 #endif
 
