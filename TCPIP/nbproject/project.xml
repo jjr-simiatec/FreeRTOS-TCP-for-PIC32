@@ -12,6 +12,35 @@
             <asminc-extensions/>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
+            <sourceRootList>
+                <sourceRootElem>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP</sourceRootElem>
+                <sourceRootElem>../include</sourceRootElem>
+                <sourceRootElem>.</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Plus/Demo/Common/Demo_IP_Protocols/Common</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Plus/Demo/Common/Demo_IP_Protocols/FTP</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Plus/Demo/Common/Demo_IP_Protocols/HTTP</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>
+                    <name>MZ_EFM</name>
+                    <type>3</type>
+                </confElem>
+                <confElem>
+                    <name>MZ_ECM</name>
+                    <type>3</type>
+                </confElem>
+                <confElem>
+                    <name>MX_795</name>
+                    <type>3</type>
+                </confElem>
+                <confElem>
+                    <name>MZ_DAB</name>
+                    <type>3</type>
+                </confElem>
+            </confList>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
         </data>
     </configuration>
 </project>

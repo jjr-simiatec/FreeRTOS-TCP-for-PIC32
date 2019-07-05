@@ -12,6 +12,40 @@
             <asminc-extensions/>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
+            <sourceRootList>
+                <sourceRootElem>.</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/portable/common</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_FAT_Demos</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Plus/Demo/Common/FreeRTOS_Plus_CLI_Demos</sourceRootElem>
+                <sourceRootElem>../FAT</sourceRootElem>
+                <sourceRootElem>../include</sourceRootElem>
+                <sourceRootElem>../FloatPrintf.X</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>
+                    <name>MZ_EFM_LAN8740A</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>MZ_ECM</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>MX_795</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>MZ_EFM_LAN9303</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>MZ_DAB</name>
+                    <type>2</type>
+                </confElem>
+            </confList>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
         </data>
     </configuration>
 </project>

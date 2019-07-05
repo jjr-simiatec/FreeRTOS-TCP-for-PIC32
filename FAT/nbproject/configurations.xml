@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="62">
+<configurationDescriptor version="65">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -71,9 +71,12 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>Simulator</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.44</languageToolchainVersion>
+        <languageToolchainVersion>2.20</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
+      <packs>
+        <pack name="PIC32MZ-EF_DFP" vendor="Microchip" version="1.0.20"/>
+      </packs>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -197,7 +200,7 @@
         </C32Global>
       </item>
       <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_format.c"
-            ex="true"
+            ex="false"
             overriding="false">
         <C32>
         </C32>
@@ -233,6 +236,7 @@
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -263,6 +267,7 @@
       </C32-AS>
       <C32-LD>
         <property key="additional-options-use-response-files" value="false"/>
+        <property key="additional-options-write-sla" value="false"/>
         <property key="allocate-dinit" value="false"/>
         <property key="code-dinit" value="false"/>
         <property key="ebase-addr" value=""/>
@@ -286,6 +291,7 @@
         <property key="kseg-origin" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
+        <property key="no-device-startup-code" value="false"/>
         <property key="no-startup-files" value="false"/>
         <property key="oXC32ld-extra-opts" value=""/>
         <property key="optimization-level" value=""/>
@@ -323,6 +329,7 @@
         <property key="rtti" value="true"/>
         <property key="strict-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -332,10 +339,38 @@
                   value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
+        <property key="mdtcm" value=""/>
+        <property key="mitcm" value=""/>
+        <property key="mstacktcm" value="false"/>
         <property key="relaxed-math" value="false"/>
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
       </C32Global>
+      <PKOBSKDEPlatformTool>
+        <property key="AutoSelectMemRanges" value="auto"/>
+        <property key="SecureSegment.SegmentProgramming" value="FullChipProgramming"/>
+        <property key="ToolFirmwareFilePath"
+                  value="Press to browse for a specific firmware version"/>
+        <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="memories.configurationmemory" value="true"/>
+        <property key="memories.dataflash" value="true"/>
+        <property key="memories.eeprom" value="true"/>
+        <property key="memories.id" value="true"/>
+        <property key="memories.programmemory" value="true"/>
+        <property key="memories.programmemory.ranges" value="1d000000-1d1fffff"/>
+        <property key="memories.userotp" value="true"/>
+        <property key="programoptions.donoteraseauxmem" value="false"/>
+        <property key="programoptions.eraseb4program" value="true"/>
+        <property key="programoptions.preservedataflash" value="false"/>
+        <property key="programoptions.preservedataflash.ranges" value=""/>
+        <property key="programoptions.preserveeeprom" value="false"/>
+        <property key="programoptions.preserveeeprom.ranges"
+                  value="${memories.eedata.default}"/>
+        <property key="programoptions.preserveprogram.ranges" value=""/>
+        <property key="programoptions.preserveprogramrange" value="false"/>
+        <property key="programoptions.usehighvoltageonmclr" value="false"/>
+        <property key="programoptions.uselvpprogramming" value="true"/>
+      </PKOBSKDEPlatformTool>
       <Simulator>
         <property key="codecoverage.enabled" value="Disable"/>
         <property key="codecoverage.enableoutputtofile" value="false"/>
@@ -367,6 +402,9 @@
         <property key="tracecontrol.tracebufmax" value="546000"/>
         <property key="tracecontrol.tracefile" value="defmplabxtrace.log"/>
         <property key="tracecontrol.traceresetonrun" value="false"/>
+        <property key="uart0io.output" value="window"/>
+        <property key="uart0io.outputfile" value=""/>
+        <property key="uart0io.uartioenabled" value="false"/>
         <property key="uart10io.output" value="window"/>
         <property key="uart10io.outputfile" value=""/>
         <property key="uart10io.uartioenabled" value="false"/>
@@ -461,6 +499,8 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0034_CORE_UNALIGNED_MEMORY_ACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0035_CORE_UNIMPLEMENTED_RAMACCESS_NOTRAP"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0040_FPU_DIFF_CP10_CP11"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0041_FPU_ACCESS_DENIED"
@@ -474,6 +514,8 @@
         <property key="warningmessagebreakoptions.W0051_INSTRUCTION_DIV_NOT_ENOUGH_REPEAT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0052_INSTRUCTION_DIV_TOO_MANY_REPEAT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0053_INVALID_INTCON_VS_FIELD_VALUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0101_SIM_UPDATE_FAILED"
                   value="report"/>
@@ -494,6 +536,23 @@
         <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0111_SIM_UNSUPPORTED_SELECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0112_SIM_INVALID_OPERATION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0113_SIM_WRITE_TO_PROTECTED_SFR"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0114_SIM_INVALID_KEY" value="report"/>
+        <property key="warningmessagebreakoptions.W0115_SIM_FAILED_TO_PARSE_DEVICE_FILE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0116_SIM_STACK_OVERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0117_SIM_STACK_UNDERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0118_SIM_INVALID_FIELD_VALUE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0119_SIM_SAMPLING_RATE_VIOLATION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -578,7 +637,14 @@
         <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
         <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0245_ADC_BUFREGEN_NOT_ALLOWED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0600_WDT_2ND_WDT_MR_WRITE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_EXPIRED" value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_RESET_OUTSIDE_WINDOW"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
                   value="report"/>
@@ -586,9 +652,33 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0702_CLC_CIRCULAR_LOOP"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0800_ACC_INPUT_INVALID_CONFIG"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0801_ACC_INPUT_NOT_SUPPORTED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0802_ACC_INVERTED_WINDOW_LIMITS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0803_ACC_MISMATCHED_POS_INPUTS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0804_ACC_WINDOW_COMP_DISABLED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0805_ACC_WINDOW_COMPS_MODES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0806_ACC_FEATURE_NOT_SUPPORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W10001_RESERVED_IRQ_HANDLER_INVOKED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W10002_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10101_UNSUPPORTED_CHANNEL_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10102_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10103_UNSUPPORTED_RECEIVER_FILTER"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10301_NO_PORT_PINS_FOUND"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10500_UNSUPPORTED_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W1201_DATAFLASH_MEM_OUTSIDE_RANGE"
                   value="report"/>
@@ -631,6 +721,16 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W2701_MPU_INVALID_REGION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W3000_LPM_READ_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W3010_SPM_WRITE_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6001_RTT_FORBIDDEN_RTPRES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6002_RTT_BAD_WRITING_ALMV"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6003_RTT_BAD_WRITING_RTPRES"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W7001_SMT_CLK_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
@@ -654,6 +754,10 @@
         <property key="warningmessagebreakoptions.W9204_UART_RX_EMPTY_QUEUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9205_UART_TX_BADFILE" value="report"/>
+        <property key="warningmessagebreakoptions.W9206_UART_RESERVED_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9207_UART_UNABLETOCLOSE_FILE"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W9401_CVREF_INVALIDSOURCESELECTION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9402_CVREF_INPUT_OUTPUTPINCONFLICT"
@@ -701,9 +805,12 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>Simulator</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.44</languageToolchainVersion>
+        <languageToolchainVersion>2.20</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
+      <packs>
+        <pack name="PIC32MZ-EC_DFP" vendor="Microchip" version="1.0.21"/>
+      </packs>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -863,6 +970,7 @@
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -893,6 +1001,7 @@
       </C32-AS>
       <C32-LD>
         <property key="additional-options-use-response-files" value="false"/>
+        <property key="additional-options-write-sla" value="false"/>
         <property key="allocate-dinit" value="false"/>
         <property key="code-dinit" value="false"/>
         <property key="ebase-addr" value=""/>
@@ -916,6 +1025,7 @@
         <property key="kseg-origin" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
+        <property key="no-device-startup-code" value="false"/>
         <property key="no-startup-files" value="false"/>
         <property key="oXC32ld-extra-opts" value=""/>
         <property key="optimization-level" value=""/>
@@ -953,6 +1063,7 @@
         <property key="rtti" value="true"/>
         <property key="strict-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -962,6 +1073,9 @@
                   value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
+        <property key="mdtcm" value=""/>
+        <property key="mitcm" value=""/>
+        <property key="mstacktcm" value="false"/>
         <property key="relaxed-math" value="false"/>
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
@@ -997,6 +1111,9 @@
         <property key="tracecontrol.tracebufmax" value="546000"/>
         <property key="tracecontrol.tracefile" value="defmplabxtrace.log"/>
         <property key="tracecontrol.traceresetonrun" value="false"/>
+        <property key="uart0io.output" value="window"/>
+        <property key="uart0io.outputfile" value=""/>
+        <property key="uart0io.uartioenabled" value="false"/>
         <property key="uart10io.output" value="window"/>
         <property key="uart10io.outputfile" value=""/>
         <property key="uart10io.uartioenabled" value="false"/>
@@ -1091,6 +1208,8 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0034_CORE_UNALIGNED_MEMORY_ACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0035_CORE_UNIMPLEMENTED_RAMACCESS_NOTRAP"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0040_FPU_DIFF_CP10_CP11"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0041_FPU_ACCESS_DENIED"
@@ -1104,6 +1223,8 @@
         <property key="warningmessagebreakoptions.W0051_INSTRUCTION_DIV_NOT_ENOUGH_REPEAT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0052_INSTRUCTION_DIV_TOO_MANY_REPEAT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0053_INVALID_INTCON_VS_FIELD_VALUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0101_SIM_UPDATE_FAILED"
                   value="report"/>
@@ -1124,6 +1245,23 @@
         <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0111_SIM_UNSUPPORTED_SELECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0112_SIM_INVALID_OPERATION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0113_SIM_WRITE_TO_PROTECTED_SFR"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0114_SIM_INVALID_KEY" value="report"/>
+        <property key="warningmessagebreakoptions.W0115_SIM_FAILED_TO_PARSE_DEVICE_FILE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0116_SIM_STACK_OVERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0117_SIM_STACK_UNDERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0118_SIM_INVALID_FIELD_VALUE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0119_SIM_SAMPLING_RATE_VIOLATION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -1208,7 +1346,14 @@
         <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
         <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0245_ADC_BUFREGEN_NOT_ALLOWED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0600_WDT_2ND_WDT_MR_WRITE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_EXPIRED" value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_RESET_OUTSIDE_WINDOW"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
                   value="report"/>
@@ -1216,9 +1361,33 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0702_CLC_CIRCULAR_LOOP"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0800_ACC_INPUT_INVALID_CONFIG"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0801_ACC_INPUT_NOT_SUPPORTED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0802_ACC_INVERTED_WINDOW_LIMITS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0803_ACC_MISMATCHED_POS_INPUTS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0804_ACC_WINDOW_COMP_DISABLED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0805_ACC_WINDOW_COMPS_MODES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0806_ACC_FEATURE_NOT_SUPPORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W10001_RESERVED_IRQ_HANDLER_INVOKED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W10002_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10101_UNSUPPORTED_CHANNEL_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10102_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10103_UNSUPPORTED_RECEIVER_FILTER"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10301_NO_PORT_PINS_FOUND"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10500_UNSUPPORTED_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W1201_DATAFLASH_MEM_OUTSIDE_RANGE"
                   value="report"/>
@@ -1261,6 +1430,16 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W2701_MPU_INVALID_REGION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W3000_LPM_READ_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W3010_SPM_WRITE_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6001_RTT_FORBIDDEN_RTPRES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6002_RTT_BAD_WRITING_ALMV"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6003_RTT_BAD_WRITING_RTPRES"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W7001_SMT_CLK_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
@@ -1284,6 +1463,10 @@
         <property key="warningmessagebreakoptions.W9204_UART_RX_EMPTY_QUEUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9205_UART_TX_BADFILE" value="report"/>
+        <property key="warningmessagebreakoptions.W9206_UART_RESERVED_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9207_UART_UNABLETOCLOSE_FILE"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W9401_CVREF_INVALIDSOURCESELECTION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9402_CVREF_INPUT_OUTPUTPINCONFLICT"
@@ -1331,9 +1514,12 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>Simulator</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.44</languageToolchainVersion>
+        <languageToolchainVersion>2.20</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
+      <packs>
+        <pack name="PIC32MX_DFP" vendor="Microchip" version="1.0.28"/>
+      </packs>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -1411,6 +1597,7 @@
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -1441,6 +1628,7 @@
       </C32-AS>
       <C32-LD>
         <property key="additional-options-use-response-files" value="false"/>
+        <property key="additional-options-write-sla" value="false"/>
         <property key="allocate-dinit" value="false"/>
         <property key="code-dinit" value="false"/>
         <property key="ebase-addr" value=""/>
@@ -1464,6 +1652,7 @@
         <property key="kseg-origin" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
+        <property key="no-device-startup-code" value="false"/>
         <property key="no-startup-files" value="false"/>
         <property key="oXC32ld-extra-opts" value=""/>
         <property key="optimization-level" value=""/>
@@ -1501,6 +1690,7 @@
         <property key="rtti" value="true"/>
         <property key="strict-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -1510,6 +1700,9 @@
                   value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
+        <property key="mdtcm" value=""/>
+        <property key="mitcm" value=""/>
+        <property key="mstacktcm" value="false"/>
         <property key="relaxed-math" value="false"/>
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
@@ -1545,6 +1738,9 @@
         <property key="tracecontrol.tracebufmax" value="546000"/>
         <property key="tracecontrol.tracefile" value="defmplabxtrace.log"/>
         <property key="tracecontrol.traceresetonrun" value="false"/>
+        <property key="uart0io.output" value="window"/>
+        <property key="uart0io.outputfile" value=""/>
+        <property key="uart0io.uartioenabled" value="false"/>
         <property key="uart10io.output" value="window"/>
         <property key="uart10io.outputfile" value=""/>
         <property key="uart10io.uartioenabled" value="false"/>
@@ -1639,6 +1835,8 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0034_CORE_UNALIGNED_MEMORY_ACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0035_CORE_UNIMPLEMENTED_RAMACCESS_NOTRAP"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0040_FPU_DIFF_CP10_CP11"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0041_FPU_ACCESS_DENIED"
@@ -1652,6 +1850,8 @@
         <property key="warningmessagebreakoptions.W0051_INSTRUCTION_DIV_NOT_ENOUGH_REPEAT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0052_INSTRUCTION_DIV_TOO_MANY_REPEAT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0053_INVALID_INTCON_VS_FIELD_VALUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0101_SIM_UPDATE_FAILED"
                   value="report"/>
@@ -1672,6 +1872,23 @@
         <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0111_SIM_UNSUPPORTED_SELECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0112_SIM_INVALID_OPERATION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0113_SIM_WRITE_TO_PROTECTED_SFR"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0114_SIM_INVALID_KEY" value="report"/>
+        <property key="warningmessagebreakoptions.W0115_SIM_FAILED_TO_PARSE_DEVICE_FILE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0116_SIM_STACK_OVERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0117_SIM_STACK_UNDERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0118_SIM_INVALID_FIELD_VALUE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0119_SIM_SAMPLING_RATE_VIOLATION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -1756,7 +1973,14 @@
         <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
         <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0245_ADC_BUFREGEN_NOT_ALLOWED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0600_WDT_2ND_WDT_MR_WRITE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_EXPIRED" value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_RESET_OUTSIDE_WINDOW"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
                   value="report"/>
@@ -1764,9 +1988,33 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0702_CLC_CIRCULAR_LOOP"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0800_ACC_INPUT_INVALID_CONFIG"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0801_ACC_INPUT_NOT_SUPPORTED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0802_ACC_INVERTED_WINDOW_LIMITS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0803_ACC_MISMATCHED_POS_INPUTS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0804_ACC_WINDOW_COMP_DISABLED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0805_ACC_WINDOW_COMPS_MODES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0806_ACC_FEATURE_NOT_SUPPORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W10001_RESERVED_IRQ_HANDLER_INVOKED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W10002_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10101_UNSUPPORTED_CHANNEL_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10102_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10103_UNSUPPORTED_RECEIVER_FILTER"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10301_NO_PORT_PINS_FOUND"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10500_UNSUPPORTED_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W1201_DATAFLASH_MEM_OUTSIDE_RANGE"
                   value="report"/>
@@ -1809,6 +2057,16 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W2701_MPU_INVALID_REGION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W3000_LPM_READ_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W3010_SPM_WRITE_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6001_RTT_FORBIDDEN_RTPRES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6002_RTT_BAD_WRITING_ALMV"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6003_RTT_BAD_WRITING_RTPRES"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W7001_SMT_CLK_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
@@ -1832,6 +2090,10 @@
         <property key="warningmessagebreakoptions.W9204_UART_RX_EMPTY_QUEUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9205_UART_TX_BADFILE" value="report"/>
+        <property key="warningmessagebreakoptions.W9206_UART_RESERVED_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9207_UART_UNABLETOCLOSE_FILE"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W9401_CVREF_INVALIDSOURCESELECTION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9402_CVREF_INPUT_OUTPUTPINCONFLICT"
@@ -1879,9 +2141,12 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>Simulator</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.43</languageToolchainVersion>
+        <languageToolchainVersion>2.20</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
+      <packs>
+        <pack name="PIC32MZ-DA_DFP" vendor="Microchip" version="1.0.42"/>
+      </packs>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -2041,6 +2306,7 @@
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -2071,6 +2337,7 @@
       </C32-AS>
       <C32-LD>
         <property key="additional-options-use-response-files" value="false"/>
+        <property key="additional-options-write-sla" value="false"/>
         <property key="allocate-dinit" value="false"/>
         <property key="code-dinit" value="false"/>
         <property key="ebase-addr" value=""/>
@@ -2094,6 +2361,7 @@
         <property key="kseg-origin" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
+        <property key="no-device-startup-code" value="false"/>
         <property key="no-startup-files" value="false"/>
         <property key="oXC32ld-extra-opts" value=""/>
         <property key="optimization-level" value=""/>
@@ -2131,6 +2399,7 @@
         <property key="rtti" value="true"/>
         <property key="strict-ansi" value="false"/>
         <property key="toplevel-reordering" value=""/>
+        <property key="unaligned-access" value=""/>
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
@@ -2140,6 +2409,9 @@
                   value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="true"/>
+        <property key="mdtcm" value=""/>
+        <property key="mitcm" value=""/>
+        <property key="mstacktcm" value="false"/>
         <property key="relaxed-math" value="false"/>
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
@@ -2175,6 +2447,9 @@
         <property key="tracecontrol.tracebufmax" value="546000"/>
         <property key="tracecontrol.tracefile" value="defmplabxtrace.log"/>
         <property key="tracecontrol.traceresetonrun" value="false"/>
+        <property key="uart0io.output" value="window"/>
+        <property key="uart0io.outputfile" value=""/>
+        <property key="uart0io.uartioenabled" value="false"/>
         <property key="uart10io.output" value="window"/>
         <property key="uart10io.outputfile" value=""/>
         <property key="uart10io.uartioenabled" value="false"/>
@@ -2269,6 +2544,8 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0034_CORE_UNALIGNED_MEMORY_ACCESS"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0035_CORE_UNIMPLEMENTED_RAMACCESS_NOTRAP"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0040_FPU_DIFF_CP10_CP11"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0041_FPU_ACCESS_DENIED"
@@ -2282,6 +2559,8 @@
         <property key="warningmessagebreakoptions.W0051_INSTRUCTION_DIV_NOT_ENOUGH_REPEAT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0052_INSTRUCTION_DIV_TOO_MANY_REPEAT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0053_INVALID_INTCON_VS_FIELD_VALUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0101_SIM_UPDATE_FAILED"
                   value="report"/>
@@ -2302,6 +2581,23 @@
         <property key="warningmessagebreakoptions.W0109_SIM_PERIPHERAL_IN_DEVELOPMENT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0110_SIM_UNEXPECTED_EVENT"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0111_SIM_UNSUPPORTED_SELECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0112_SIM_INVALID_OPERATION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0113_SIM_WRITE_TO_PROTECTED_SFR"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0114_SIM_INVALID_KEY" value="report"/>
+        <property key="warningmessagebreakoptions.W0115_SIM_FAILED_TO_PARSE_DEVICE_FILE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0116_SIM_STACK_OVERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0117_SIM_STACK_UNDERFLOW"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0118_SIM_INVALID_FIELD_VALUE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0119_SIM_SAMPLING_RATE_VIOLATION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0201_ADC_NO_STIMULUS_FILE"
                   value="report"/>
@@ -2386,7 +2682,14 @@
         <property key="warningmessagebreakoptions.W0243_ADC_INVALID_TAD" value="report"/>
         <property key="warningmessagebreakoptions.W0244_ADC_CONVERSION_ABORTED"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0245_ADC_BUFREGEN_NOT_ALLOWED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W0400_PWM_PWM_FASTER_THAN_FOSC"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0600_WDT_2ND_WDT_MR_WRITE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_EXPIRED" value="report"/>
+        <property key="warningmessagebreakoptions.W0601_WDT_RESET_OUTSIDE_WINDOW"
                   value="report"/>
         <property key="warningmessagebreakoptions.W0700_CLC_GENERAL_WARNING"
                   value="report"/>
@@ -2394,9 +2697,33 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W0702_CLC_CIRCULAR_LOOP"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W0800_ACC_INPUT_INVALID_CONFIG"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0801_ACC_INPUT_NOT_SUPPORTED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0802_ACC_INVERTED_WINDOW_LIMITS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0803_ACC_MISMATCHED_POS_INPUTS"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0804_ACC_WINDOW_COMP_DISABLED"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0805_ACC_WINDOW_COMPS_MODES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W0806_ACC_FEATURE_NOT_SUPPORTED"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W10001_RESERVED_IRQ_HANDLER_INVOKED"
                   value="report"/>
         <property key="warningmessagebreakoptions.W10002_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10101_UNSUPPORTED_CHANNEL_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10102_UNSUPPORTED_CLK_SOURCE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10103_UNSUPPORTED_RECEIVER_FILTER"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10301_NO_PORT_PINS_FOUND"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W10500_UNSUPPORTED_SOURCE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W1201_DATAFLASH_MEM_OUTSIDE_RANGE"
                   value="report"/>
@@ -2439,6 +2766,16 @@
                   value="report"/>
         <property key="warningmessagebreakoptions.W2701_MPU_INVALID_REGION"
                   value="report"/>
+        <property key="warningmessagebreakoptions.W3000_LPM_READ_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W3010_SPM_WRITE_PROTECTION_SECTION"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6001_RTT_FORBIDDEN_RTPRES"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6002_RTT_BAD_WRITING_ALMV"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W6003_RTT_BAD_WRITING_RTPRES"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W7001_SMT_CLK_SELECTION_NOT_SUPPORT"
                   value="report"/>
         <property key="warningmessagebreakoptions.W7002_SMT_SIG_SELECTION_NOT_SUPPORT"
@@ -2462,6 +2799,10 @@
         <property key="warningmessagebreakoptions.W9204_UART_RX_EMPTY_QUEUE"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9205_UART_TX_BADFILE" value="report"/>
+        <property key="warningmessagebreakoptions.W9206_UART_RESERVED_MODE"
+                  value="report"/>
+        <property key="warningmessagebreakoptions.W9207_UART_UNABLETOCLOSE_FILE"
+                  value="report"/>
         <property key="warningmessagebreakoptions.W9401_CVREF_INVALIDSOURCESELECTION"
                   value="report"/>
         <property key="warningmessagebreakoptions.W9402_CVREF_INPUT_OUTPUTPINCONFLICT"
