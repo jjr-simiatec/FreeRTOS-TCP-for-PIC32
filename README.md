@@ -48,7 +48,7 @@ FreeRTOS+FAT source code version 160919-MIT.
 
 [**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet.]
 
-[**Note**: the build instructions are out of date. FreeRTOS+TCP is not integrated as part of the standard FreeRTOS distribution.]
+[**Note**: the build instructions are out of date. FreeRTOS+TCP was not integrated as part of the standard FreeRTOS distribution, for example.]
 
 ## Non-requirements
 
