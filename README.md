@@ -27,8 +27,11 @@ $
 To use the source code as-is, you need one of the following Starter Kits:
 
 PIC32 Ethernet Starter Kit, Microchip part no. DM320004.
+
 PIC32MZ EC Starter Kit w/ Crypto Engine, Microchip part no. DM320006-C.
+
 PIC32MZ Embedded Connectivity with FPU (EF) Start Kit (Crypto), Microchip part no. DM320007-C.
+
 PIC32MZ Embedded Graphics with External DRAM (DA) Starter Kit (Crypto), Microchip part no. DM320008-C.
 
 [**Note**: the source code should compile and run on the non-crypto variants of the PIC32MZ Starter Kits but project settings will need to be changed.]
@@ -36,8 +39,11 @@ PIC32MZ Embedded Graphics with External DRAM (DA) Starter Kit (Crypto), Microchi
 [**Note**: the replacement for DM320004, Microchip part no. DM320004-2, has minimal changes to the circuits but does use a different PHY from the original.]
 
 MPLAB X IDE version 5.20 or later.
+
 MPLAB XC32 Compiler version 2.20 or later.
+
 FreeRTOS source code version 10.2.1.
+
 FreeRTOS+FAT source code version 160919-MIT.
 
 [**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet.]
@@ -98,10 +104,17 @@ You will likely need to create a small driver for the PHY you use. Two drivers a
 The following configuration parameters are available. Values without defaults must be configured:
 
 `ipconfigPIC32_TX_DMA_DESCRIPTORS` - number of transmit DMA descriptors, defaults to 10
+
 `ipconfigPIC32_RX_DMA_DESCRIPTORS` - number of receive DMA descriptors, defaults to 20
+
 `ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ` - maximum MDC clock speed allowed by the PHY, defaults to 2.5 MHz
+
 `ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - for the MZ __only__: frequency of T<sub>PBCLK5</sub>
+
 `ipconfigPIC32_DRV_TASK_PRIORITY` - driver task priority
+
 `ipconfigPIC32_DRV_TASK_STACK_SIZE` - driver task stack size in words
+
 `ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority
+
 `ipconfigPIC32_DRV_TASK_BLOCK_TICKS` - maximum time the driver waits for stack resources, defaults to portMAX_DELAY
