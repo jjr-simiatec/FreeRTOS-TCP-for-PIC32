@@ -120,7 +120,8 @@
 #define configCHECK_FOR_STACK_OVERFLOW                  3 /* Three also checks the system/interrupt stack. */
 #define configQUEUE_REGISTRY_SIZE                       4
 #define configUSE_RECURSIVE_MUTEXES                     1
-#define configUSE_MALLOC_FAILED_HOOK                    1
+#define configUSE_MALLOC_FAILED_HOOK                    0
+#define configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES       0
 #define configUSE_APPLICATION_TASK_TAG                  0
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS         3
 #define configUSE_COUNTING_SEMAPHORES                   1
