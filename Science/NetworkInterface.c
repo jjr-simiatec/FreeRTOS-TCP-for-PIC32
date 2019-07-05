@@ -1,7 +1,7 @@
 /*
  * PIC32 Ethernet Driver for FreeRTOS+TCP
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -54,6 +54,10 @@
 
 #if !defined(ipconfigPIC32_DRV_TASK_BLOCK_TICKS)
 #define ipconfigPIC32_DRV_TASK_BLOCK_TICKS  portMAX_DELAY
+#endif
+
+#if !defined(ipconfigPIC32_VERIFY_BUFFER_DESCRIPTOR_LINK)
+#define ipconfigPIC32_VERIFY_BUFFER_DESCRIPTOR_LINK 0
 #endif
 
 #if !defined(ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ)
@@ -136,7 +140,7 @@ static bool ExecuteSelfTests(void);
     result; \
 }) \
 
-#ifdef __DEBUG
+#if ipconfigPIC32_VERIFY_BUFFER_DESCRIPTOR_LINK == 1
 
 static NetworkBufferDescriptor_t *pxDebugGetNetworkBufferWithDescriptor(size_t xRequestedSizeBytes, TickType_t xBlockTimeTicks)
 {
@@ -153,7 +157,7 @@ static NetworkBufferDescriptor_t *pxDebugGetNetworkBufferWithDescriptor(size_t x
     return p;
 }
 
-//#define pxGetNetworkBufferWithDescriptor pxDebugGetNetworkBufferWithDescriptor
+#define pxGetNetworkBufferWithDescriptor pxDebugGetNetworkBufferWithDescriptor
 
 #endif
 
@@ -432,6 +436,9 @@ BaseType_t xNetworkInterfaceInitialise(void)
             }
 
             break;
+
+        default:
+            ;
         }
 
         ControllerInitialise();
