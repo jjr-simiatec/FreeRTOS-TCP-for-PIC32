@@ -34,6 +34,8 @@ PIC32MZ Embedded Connectivity with FPU (EF) Start Kit (Crypto), Microchip part n
 
 PIC32MZ Embedded Graphics with External DRAM (DA) Starter Kit (Crypto), Microchip part no. DM320008-C.
 
+The Ethernet module is the same across the PIC32 range and this driver has been verified to work on PIC32MX795F512L, PIC32MZ2048ECM144, PIC32MZ2048EFM144 and PIC32MZ2064DAB288. The supported Ethernet PHYs include DP83848, LAN8740A and LAN9303.
+
 [**Note**: the source code should compile and run on the non-crypto variants of the PIC32MZ Starter Kits but project settings will need to be changed.]
 
 [**Note**: the replacement for DM320004, Microchip part no. DM320004-2, has minimal changes to the circuits but does use a different PHY from the original.]
@@ -44,7 +46,7 @@ MPLAB XC32 Compiler version 2.20 or later.
 
 FreeRTOS source code version 10.2.1.
 
-FreeRTOS+FAT source code version 160919-MIT.
+FreeRTOS+FAT source code version 160919a-MIT.
 
 [**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet.]
 
