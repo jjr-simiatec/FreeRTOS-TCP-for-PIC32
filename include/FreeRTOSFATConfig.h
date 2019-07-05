@@ -259,7 +259,7 @@ ff_fprintf() is quite a heavy function because it allocates RAM and
 brings in a lot of string and variable argument handling code.  If
 ff_fprintf() is not being used then the code size can be reduced by setting
 ffconfigFPRINTF_SUPPORT to 0. */
-#define ffconfigFPRINTF_SUPPORT	1
+#define ffconfigFPRINTF_SUPPORT	0
 
 /* ff_fprintf() will allocate a buffer of this size in which it will create
 its formatted string.  The buffer will be freed before the function
@@ -304,7 +304,6 @@ console before the network is connected then a UDP port after the network has
 connected. */
 extern void vLoggingPrintf( const char *pcFormatString, ... );
 //#define FF_PRINTF vLoggingPrintf
-#define FF_PRINTF printf
 
 /* Include the recursive function ff_deltree().  The use of recursion does not
 conform with the coding standard, so use this function with care! */
