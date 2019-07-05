@@ -50,23 +50,26 @@ FreeRTOS+FAT source code version 160919a-MIT.
 
 [**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet.]
 
-[**Note**: the build instructions are out of date. FreeRTOS+TCP was not integrated as part of the standard FreeRTOS distribution, for example.]
-
 ## Non-requirements
 
 You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Microchip Libraries for Applications.
 
 ## How to build
 
-1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS-Plus source code. Alternatively, create symbolic links to the locations of the FreeRTOS and FreeRTOS-Plus source trees. For example on Windows:
-`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv9.0.0\FreeRTOS"`
-`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS_Labs_160919\FreeRTOS-Plus"`
+1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS+FAT source code. Put the FreeRTOS+FAT source in the FreeRTOS-Plus directory. Alternatively, create symbolic links to the locations of the source trees. For example on Windows:
+`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS"`
+`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS-Plus"`
+`mklink /d FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT "%USERPROFILE%\Documents\FreeRTOS-Plus-FAT-160919a-MIT"`
 
 2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
 
 3. For each project, select the required configuration and then build. The available configurations are `MZ_DAB`, `MZ_EFM`, `MZ_ECM` and `MX_795` corresponding to the microcontroller type on each Starter Kit.
 
 4. Finally, load the project called `Science`. Again, select the required configuration and build. Use the Run command in the IDE to program the microcontroller.
+
+##Known issues
+
+A couple of bugs in FreeRTOS+TCP and FreeRTOS+FAT can result in heap corruption or an exception. Use unoffical code releases that can be found here: https://sourceforge.net/p/freertos/discussion/382005/thread/c27aeb20b5/ and also manually apply the modification described here: https://sourceforge.net/p/freertos/discussion/382005/thread/6e3856e518/
 
 ## How to use
 
