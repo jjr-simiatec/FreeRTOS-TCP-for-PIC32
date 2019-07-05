@@ -2,8 +2,6 @@
 
 A FreeRTOS+TCP port for PIC32 microcontrollers.
 
-(Preliminary Documentation)
-
 ## Project structure
 ```
 $
@@ -26,13 +24,10 @@ $
 ## Requirements
 To use the source code as-is, you need one of the following Starter Kits:
 
-PIC32 Ethernet Starter Kit, Microchip part no. DM320004.
-
-PIC32MZ EC Starter Kit w/ Crypto Engine, Microchip part no. DM320006-C.
-
-PIC32MZ Embedded Connectivity with FPU (EF) Start Kit (Crypto), Microchip part no. DM320007-C.
-
-PIC32MZ Embedded Graphics with External DRAM (DA) Starter Kit (Crypto), Microchip part no. DM320008-C.
+  * PIC32 Ethernet Starter Kit, Microchip part no. DM320004.
+  * PIC32MZ EC Starter Kit w/ Crypto Engine, Microchip part no. DM320006-C.
+  * PIC32MZ Embedded Connectivity with FPU (EF) Start Kit (Crypto), Microchip part no. DM320007-C.
+  * PIC32MZ Embedded Graphics with External DRAM (DA) Starter Kit (Crypto), Microchip part no. DM320008-C.
 
 The Ethernet module is the same across the PIC32 range and this driver has been verified to work on PIC32MX795F512L, PIC32MZ2048ECM144, PIC32MZ2048EFM144 and PIC32MZ2064DAB288. The supported Ethernet PHYs include DP83848, LAN8740A and LAN9303.
 
@@ -40,15 +35,13 @@ The Ethernet module is the same across the PIC32 range and this driver has been 
 
 [**Note**: the replacement for DM320004, Microchip part no. DM320004-2, has minimal changes to the circuits but does use a different PHY from the original.]
 
-MPLAB X IDE version 5.20 or later.
+The following software and source code packages are required:
+  * MPLAB X IDE version 5.20 or later.
+  * MPLAB XC32 Compiler version 2.20 or later.
+  * FreeRTOS source code version 10.2.1.
+  * FreeRTOS+FAT source code version 160919a-MIT.
 
-MPLAB XC32 Compiler version 2.20 or later.
-
-FreeRTOS source code version 10.2.1.
-
-FreeRTOS+FAT source code version 160919a-MIT.
-
-[**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet.]
+[**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet. See the known issues section for more info.]
 
 ## Non-requirements
 
@@ -56,12 +49,9 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 
 ## How to build
 
-1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS+FAT source code. Put the FreeRTOS+FAT source in the FreeRTOS-Plus directory. Alternatively, create symbolic links to the locations of the source trees. For example on Windows:
-
-`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS"`
-
-`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS-Plus"`
-
+1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS+FAT source code. Put the FreeRTOS+FAT source in the FreeRTOS-Plus directory. Alternatively, create symbolic links to the locations of the source trees. For example on Windows:  
+`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS"`  
+`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS-Plus"`  
 `mklink /d FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT "%USERPROFILE%\Documents\FreeRTOS-Plus-FAT-160919a-MIT"`
 
 2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
@@ -73,6 +63,8 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 ## Known issues
 
 A couple of bugs in FreeRTOS+TCP and FreeRTOS+FAT can result in heap corruption or an exception. Use unoffical code releases that can be found here: https://sourceforge.net/p/freertos/discussion/382005/thread/c27aeb20b5/ and also manually apply the modification described here: https://sourceforge.net/p/freertos/discussion/382005/thread/6e3856e518/
+
+Compiler versions later than v1.44 would sometimes output the assembler code in `PIC32Arch.h` incorrectly (bad register allocations) depending on optimisation settings etc. This accounts for reports that the driver was not working. A modification to the constraints seems to have cured this problem for v2.20 but has only been tested using `-O0` and `-O1`.
 
 ## How to use
 
@@ -107,22 +99,15 @@ The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the 
 #define ipconfigETHERNET_DRIVER_FILTERS_PACKETS     (0)
 #define ipconfigETHERNET_DRIVER_FILTERS_FRAME_TYPES (1)
 ```
-You will likely need to create a small driver for the PHY you use. Two drivers are provided, one for the DP83848 PHY used in the MX Starter Kit and one for the LAN8740A PHY used in the MZ Starter Kits. Note that this implementation assumes the PHY interrupt line is connected to the microcontroller to detect link state change events.
+You will likely need to create a small driver for the PHY you are using. Three drivers are provided: one for the DP83848 PHY used in the MX Starter Kit, one for the LAN8740A PHY used in the MZ Starter Kits and a simple LAN9303 driver. Note that this implementation assumes the PHY interrupt line is connected to the microcontroller to detect link state change events. PHY support is needed to use Wake-on-LAN or the Ethernet cable diagnostics - only the LAN8740A has all of these features. All PHYs allow the interface to be brought up and down (powered off).
 
 The following configuration parameters are available. Values without defaults must be configured:
 
-`ipconfigPIC32_TX_DMA_DESCRIPTORS` - number of transmit DMA descriptors, defaults to 10
-
-`ipconfigPIC32_RX_DMA_DESCRIPTORS` - number of receive DMA descriptors, defaults to 20
-
-`ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ` - maximum MDC clock speed allowed by the PHY, defaults to 2.5 MHz
-
-`ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - for the MZ __only__: frequency of T<sub>PBCLK5</sub>
-
-`ipconfigPIC32_DRV_TASK_PRIORITY` - driver task priority
-
-`ipconfigPIC32_DRV_TASK_STACK_SIZE` - driver task stack size in words
-
-`ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority
-
+`ipconfigPIC32_TX_DMA_DESCRIPTORS` - number of transmit DMA descriptors, defaults to 10  
+`ipconfigPIC32_RX_DMA_DESCRIPTORS` - number of receive DMA descriptors, defaults to 20  
+`ipconfigPIC32_MIIM_MANAGEMENT_MAX_CLK_HZ` - maximum MDC clock speed allowed by the PHY, defaults to 2.5 MHz  
+`ipconfigPIC32_MIIM_SOURCE_CLOCK_HZ` - for the MZ __only__: frequency of T<sub>PBCLK5</sub>  
+`ipconfigPIC32_DRV_TASK_PRIORITY` - driver task priority  
+`ipconfigPIC32_DRV_TASK_STACK_SIZE` - driver task stack size in words  
+`ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority  
 `ipconfigPIC32_DRV_TASK_BLOCK_TICKS` - maximum time the driver waits for stack resources, defaults to portMAX_DELAY
