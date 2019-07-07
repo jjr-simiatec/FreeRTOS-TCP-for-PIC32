@@ -30,9 +30,9 @@
 #include <stdarg.h>
 
 #include "UART2.h"
-#include "LAN8740A.h"
 #include "TestHarness.h"
-#include "Ethernet.h"
+#include "TCPIP/Ethernet.h"
+#include "TCPIP/PHYGeneric.h"
 #include "FreeRTOS_CLI.h"
 
 #define TESTS_PER_PAGE      12
@@ -283,10 +283,10 @@ void ViewPHYRegisters(void)
             case 'R':
 #if defined(__PIC32MZ__)
                 // Hardware reset the PHY
-                PHY_ASSERT_HW_RESET();
+                ipconfigPIC32_PHY_ASSERT_HW_RESET();
                 printf("\r\nReset asserted, press a key to continue.");
                 WaitForAKeyPress(portMAX_DELAY);
-                PHY_CLEAR_HW_RESET();
+                ipconfigPIC32_PHY_CLEAR_HW_RESET();
 #endif
                 break;
 

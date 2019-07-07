@@ -26,7 +26,6 @@
 #include "ff_ramdiskex.h"
 #include "TestHarness.h"
 #include "TCPCommandConsole.h"
-#include "HardwareProfile.h"
 
 // The number and size of sectors that will make up the RAM disk
 #define mainDISK_SECTOR_SIZE    512UL

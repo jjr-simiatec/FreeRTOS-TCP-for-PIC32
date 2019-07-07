@@ -30,9 +30,7 @@
 #include <FreeRTOS_Sockets.h>
 
 #include "UART2.h"
-#include "LAN8740A.h"
 #include "TestHarness.h"
-#include "PIC32Arch.h"
 
 #if defined(__PIC32MX__)
 
@@ -157,7 +155,7 @@ void HardwareConfigurePerformance(void)
     ANSELJCLR = _ANSELJ_ANSJ8_MASK | _ANSELJ_ANSJ9_MASK | _ANSELJ_ANSJ11_MASK;
 
     // PPS and I/O for Ethernet PHY
-    PHY_CLEAR_HW_RESET();
+    ipconfigPIC32_PHY_CLEAR_HW_RESET();
     TRISHCLR = _TRISH_TRISH11_MASK; // nRST
     TRISCSET = _TRISC_TRISC13_MASK; // nINT
     INT4Rbits.INT4R = 0b0111;       // RPC13
@@ -280,7 +278,7 @@ void HardwareConfigurePerformance(void)
     RPG9Rbits.RPG9R = 0b0010;   // U2TX
 
     // I/O configuration for Ethernet PHY
-    PHY_CLEAR_HW_RESET();
+    ipconfigPIC32_PHY_CLEAR_HW_RESET();
     ANSELBCLR = _ANSELB_ANSB11_MASK;
     TRISJCLR = _TRISJ_TRISJ15_MASK; // nRST
     TRISBSET = _TRISB_TRISB11_MASK; // nINT
