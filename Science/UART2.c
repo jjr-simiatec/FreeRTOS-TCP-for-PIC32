@@ -57,8 +57,6 @@ void __attribute__(( interrupt(IPL0AUTO), vector(_UART2_RX_VECTOR) )) Uart2RxInt
 #elif defined(__PIC32MX__)
 
 void __attribute__(( interrupt(IPL0AUTO), vector(_UART2_VECTOR) )) Uart2InterruptWrapper(void);
-static void Uart2TxInterruptWrapper(void);
-static void Uart2RxInterruptWrapper(void);
 
 #define ClearAllInterrupts()    IFS1CLR = _IFS1_U2EIF_MASK | _IFS1_U2RXIF_MASK | _IFS1_U2TXIF_MASK
 #define ClearErrorInterrupt()   IFS1CLR = _IFS1_U2EIF_MASK
