@@ -18,4 +18,6 @@ NOTE: This constant is defined in the project options as configurations are
 provided that both enable and disable floating point support. */
 #define configUSE_TASK_FPU_SUPPORT                      1
 
+#define PIC32_HAS_WORKING_TRNG
+
 #endif /* FREERTOS_CONFIG_MZ_EFM_H */
