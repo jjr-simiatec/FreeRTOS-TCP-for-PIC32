@@ -23,7 +23,7 @@
             </sourceRootList>
             <confList>
                 <confElem>
-                    <name>MZ_EFM_LAN8740A</name>
+                    <name>MZ_EFM</name>
                     <type>2</type>
                 </confElem>
                 <confElem>
@@ -32,10 +32,6 @@
                 </confElem>
                 <confElem>
                     <name>MX_795</name>
-                    <type>2</type>
-                </confElem>
-                <confElem>
-                    <name>MZ_EFM_LAN9303</name>
                     <type>2</type>
                 </confElem>
                 <confElem>

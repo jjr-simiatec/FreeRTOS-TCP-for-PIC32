@@ -20,6 +20,12 @@
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/include/NetworkBufferManagement.h</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/include/NetworkInterface.h</itemPath>
       <itemPath>../include/FreeRTOSIPConfig.h</itemPath>
+      <itemPath>EthernetPrivate.h</itemPath>
+      <itemPath>DP83848.h</itemPath>
+      <itemPath>LAN8740A.h</itemPath>
+      <itemPath>LAN9303.h</itemPath>
+      <itemPath>Ethernet.h</itemPath>
+      <itemPath>PHYGeneric.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -55,6 +61,13 @@
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_TCP_WIN.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_UDP_IP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DNS.c</itemPath>
+      <itemPath>Ethernet_ISR.S</itemPath>
+      <itemPath>NetworkInterface.c</itemPath>
+      <itemPath>PHYGeneric.c</itemPath>
+      <itemPath>PHY_isr.S</itemPath>
+      <itemPath>DP83848.c</itemPath>
+      <itemPath>LAN8740A.c</itemPath>
+      <itemPath>LAN9303.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -111,7 +124,7 @@
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
       <C32>
-        <property key="additional-warnings" value="false"/>
+        <property key="additional-warnings" value="true"/>
         <property key="addresss-attribute-use" value="false"/>
         <property key="enable-app-io" value="false"/>
         <property key="enable-omit-frame-pointer" value="false"/>
