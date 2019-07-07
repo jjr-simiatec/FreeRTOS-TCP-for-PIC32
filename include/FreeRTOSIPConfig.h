@@ -398,4 +398,6 @@ messages. */
 #define ipconfigPIC32_ETH_INT_PRIORITY      configKERNEL_INTERRUPT_PRIORITY
 #define ipconfigPIC32_DRV_TASK_BLOCK_TICKS  pdMS_TO_TICKS(5)
 
+#include "PHYHardwareProfile.h"
+
 #endif /* FREERTOS_IP_CONFIG_H */

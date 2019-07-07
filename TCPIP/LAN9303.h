@@ -1,7 +1,7 @@
 /*
  * LAN9303 PHY Driver
  *
- * Copyright (c) 2017 John Robertson
+ * Copyright (c) 2017-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -18,8 +18,6 @@
 
 #ifndef LAN_9303_H
 #define LAN_9303_H
-
-#include "PHYGeneric.h"
 
 typedef enum {
     LAN9303_PHYADDR_VPHY,

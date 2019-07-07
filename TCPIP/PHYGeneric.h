@@ -19,11 +19,13 @@
 #ifndef PHYGENERIC_H
 #define	PHYGENERIC_H
 
-#include "HardwareProfile.h"
-
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+#define PIC32_PHY_DRIVER_DP83848    1
+#define PIC32_PHY_DRIVER_LAN8740A   2
+#define PIC32_PHY_DRIVER_LAN9303    3
 
 typedef enum {
     // Basic
@@ -162,11 +164,11 @@ typedef enum {
     PHY_TDR_STATE_OPEN
 } phy_tdr_state_t;
 
-#define PHY_READ(reg)           PHYRead(PHY_ADDRESS, reg)
-#define PHY_WRITE(reg, val)     PHYWrite(PHY_ADDRESS, reg, val)
+#define PHY_READ(reg)           PHYRead(ipconfigPIC32_PHY_ADDRESS, reg)
+#define PHY_WRITE(reg, val)     PHYWrite(ipconfigPIC32_PHY_ADDRESS, reg, val)
 
-#define PHY_MMD_READ(devad, reg)        PHY_MMDRead(PHY_ADDRESS, devad, reg)
-#define PHY_MMD_WRITE(devad, reg, val)  PHY_MMDWrite(PHY_ADDRESS, devad, reg, val)
+#define PHY_MMD_READ(devad, reg)        PHY_MMDRead(ipconfigPIC32_PHY_ADDRESS, devad, reg)
+#define PHY_MMD_WRITE(devad, reg, val)  PHY_MMDWrite(ipconfigPIC32_PHY_ADDRESS, devad, reg, val)
 
 extern void PHYInitialise(void);
 extern bool PHYSupportsWOL(void);

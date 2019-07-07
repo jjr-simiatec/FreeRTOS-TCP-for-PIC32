@@ -28,9 +28,12 @@
 #include <stdbool.h>
 
 #include "Ethernet.h"
+#include "PHYGeneric.h"
 #include "EthernetPrivate.h"
-#include "LAN8740A.h"
 #include "PIC32Arch.h"
+#include "LAN8740A.h"
+
+#if ipconfigPIC32_PHY_DRIVER == PIC32_PHY_DRIVER_LAN8740A
 
 // Software reset corrupts these and so they must be manually
 // set each time or TDR won't function correctly
@@ -66,8 +69,8 @@ void PHYInitialise(void)
     PHY_MMD_WRITE(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_MAC_RX_ADDR_B, EMAC1SA1);
     PHY_MMD_WRITE(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_MAC_RX_ADDR_C, EMAC1SA2);
 
-    PHY_CLEAR_INTERRUPT();
-    PHY_ENABLE_INTERRUPT();
+    ipconfigPIC32_PHY_CLEAR_INTERRUPT();
+    ipconfigPIC32_PHY_ENABLE_INTERRUPT();
 
     PHY_WRITE(LAN8740_REG_INTERRUPT_MASK, LAN8740_INT_AUTO_NEG_COMPLETE | LAN8740_INT_LINK_DOWN);
 }
@@ -213,7 +216,7 @@ phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
 void PHYDeferredInterruptHandler(void)
 {
     uint16_t intSource = PHY_READ(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
-    PHY_CLEAR_INTERRUPT();
+    ipconfigPIC32_PHY_CLEAR_INTERRUPT();
 
     switch( g_interfaceState )
     {
@@ -240,7 +243,7 @@ void PHYDeferredInterruptHandler(void)
         ;
     }
 
-    PHY_ENABLE_INTERRUPT();
+    ipconfigPIC32_PHY_ENABLE_INTERRUPT();
 }
 
 bool PHYSupportsWOL(void)
@@ -250,7 +253,7 @@ bool PHYSupportsWOL(void)
 
 void PHYPrepareWakeOnLAN(void)
 {
-    PHY_DISABLE_INTERRUPT();
+    ipconfigPIC32_PHY_DISABLE_INTERRUPT();
 
     uint16_t wucsr = PHY_MMD_READ(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_WAKEUP_CTRL_STATUS);
     PHY_MMD_WRITE(LAN8740_MMD_DEVAD_PCS, LAN8740_MMDINDX_PCS_WAKEUP_CTRL_STATUS, wucsr | LAN8740_MMD_PCS_WUCSR_MAGIC_PACKET_EN);
@@ -258,6 +261,8 @@ void PHYPrepareWakeOnLAN(void)
     PHY_WRITE(LAN8740_REG_INTERRUPT_MASK, LAN8740_INT_WOL);
 
     PHY_READ(LAN8740_REG_INTERRUPT_SOURCE_FLAG);
-    PHY_CLEAR_INTERRUPT();
-    PHY_ENABLE_INTERRUPT();
+    ipconfigPIC32_PHY_CLEAR_INTERRUPT();
+    ipconfigPIC32_PHY_ENABLE_INTERRUPT();
 }
+
+#endif

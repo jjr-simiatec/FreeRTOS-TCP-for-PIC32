@@ -1,7 +1,7 @@
 /*
  * DP83848 PHY Driver
  * 
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -18,8 +18,6 @@
 
 #ifndef DP83848_H
 #define DP83848_H
-
-#include "PHYGeneric.h"
 
 typedef enum {
     DP83848_REG_PHY_STATUS = 16,

@@ -1,7 +1,7 @@
 /*
  * LAN8740A PHY Driver
  *
- * Copyright (c) 2016 John Robertson
+ * Copyright (c) 2016-2019 John Robertson
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -18,8 +18,6 @@
 
 #ifndef LAN_8740A_H
 #define LAN_8740A_H
-
-#include "PHYGeneric.h"
 
 typedef enum {
     LAN8740_REG_EDPD_CROSSOVER_EEE = 16,

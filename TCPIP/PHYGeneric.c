@@ -23,11 +23,28 @@
 #include <stdbool.h>
 
 #include "Ethernet.h"
-#include "EthernetPrivate.h"
 #include "PHYGeneric.h"
+#include "EthernetPrivate.h"
 #include "PIC32Arch.h"
+#include "FreeRTOSIPConfig.h"
 
-void __attribute__(( interrupt(IPL0AUTO), vector(PHY_INTERRUPT_VECTOR) )) PHYInterruptWrapper(void);
+#if !defined(ipconfigPIC32_PHY_INTERRUPT_VECTOR)
+#error The interrupt vector for the PHY interrupt is not defined
+#endif
+
+#if !defined(ipconfigPIC32_PHY_ENABLE_INTERRUPT)
+#error Method to enable PHY interrupt is not defined
+#endif
+
+#if !defined(ipconfigPIC32_PHY_DISABLE_INTERRUPT)
+#error Method to disable PHY interrupt is not defined
+#endif
+
+#if !defined(ipconfigPIC32_PHY_CLEAR_INTERRUPT)
+#error Method to clear PHY interrupt is not defined
+#endif
+
+void __attribute__(( interrupt(IPL0AUTO), vector(ipconfigPIC32_PHY_INTERRUPT_VECTOR) )) PHYInterruptWrapper(void);
 
 uint16_t PHYRead(uint8_t phyaddr, uint8_t reg)
 {
@@ -87,7 +104,7 @@ void PHYGenericPowerDown(uint8_t phyaddr)
 
 void PHYInterruptHandler(void)
 {
-    PHY_DISABLE_INTERRUPT();
+    ipconfigPIC32_PHY_DISABLE_INTERRUPT();
 
     InterlockedCompareExchange(&g_interfaceState, ETH_WAKE_ON_LAN_WOKEN, ETH_WAKE_ON_LAN);
 

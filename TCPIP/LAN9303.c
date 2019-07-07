@@ -27,8 +27,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "LAN9303.h"
+#include "PHYGeneric.h"
 #include "EthernetPrivate.h"
+#include "LAN9303.h"
+
+#if ipconfigPIC32_PHY_DRIVER == PIC32_PHY_DRIVER_LAN9303
 
 void PHYInitialise(void)
 {
@@ -111,3 +114,5 @@ void LAN9303WriteRegister(lan9303_register_t reg, uint32_t val)
     PHYWrite(phyaddr, regaddr, val & 0xFFFFU);
     PHYWrite(phyaddr, regaddr | 1, val >> 16U);
 }
+
+#endif

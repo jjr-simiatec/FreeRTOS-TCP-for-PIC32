@@ -27,8 +27,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "PHYGeneric.h"
 #include "EthernetPrivate.h"
 #include "DP83848.h"
+
+#if ipconfigPIC32_PHY_DRIVER == PIC32_PHY_DRIVER_DP83848
 
 void PHYInitialise(void)
 {
@@ -36,8 +39,8 @@ void PHYInitialise(void)
 
     while( PHY_READ(PHY_REG_BASIC_CONTROL) & PHY_CTRL_RESET );
 
-    PHY_CLEAR_INTERRUPT();
-    PHY_ENABLE_INTERRUPT();
+    ipconfigPIC32_PHY_CLEAR_INTERRUPT();
+    ipconfigPIC32_PHY_ENABLE_INTERRUPT();
 
     PHY_WRITE(DP83848_REG_INTERRUPT_CONTROL, DP83848_MICR_INTERRUPT_ENABLE | DP83848_MICR_INTERRUPT_OUTPUT_ENABLE);
     PHY_WRITE(DP83848_REG_INTERRUPT_STATUS, DP83848_MISR_ENABLE_AUTO_NEG_COMPLETE_INT | DP83848_MISR_ENABLE_LINK_CHANGE_INT);
@@ -54,7 +57,7 @@ void PHYGetStatus(phy_status_t *pStatus)
 void PHYDeferredInterruptHandler(void)
 {
     uint16_t intSource = PHY_READ(DP83848_REG_INTERRUPT_STATUS);
-    PHY_CLEAR_INTERRUPT();
+    ipconfigPIC32_PHY_CLEAR_INTERRUPT();
 
     if(intSource & (DP83848_MISR_AUTO_NEG_COMPLETE | DP83848_MISR_LINK_STATUS_CHANGE))
     {
@@ -66,7 +69,7 @@ void PHYDeferredInterruptHandler(void)
             FreeRTOS_NetworkDown();
     }
 
-    PHY_ENABLE_INTERRUPT();
+    ipconfigPIC32_PHY_ENABLE_INTERRUPT();
 }
 
 phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate)
@@ -82,3 +85,5 @@ bool PHYSupportsWOL(void)
 void PHYPrepareWakeOnLAN(void)
 {
 }
+
+#endif

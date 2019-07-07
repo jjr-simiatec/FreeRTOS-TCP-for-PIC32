@@ -32,8 +32,8 @@
 #include <NetworkBufferManagement.h>
 
 #include "Ethernet.h"
-#include "EthernetPrivate.h"
 #include "PHYGeneric.h"
+#include "EthernetPrivate.h"
 #include "PIC32Arch.h"
 
 #if (ipconfigZERO_COPY_TX_DRIVER != 1) || (ipconfigZERO_COPY_RX_DRIVER != 1)
@@ -403,7 +403,7 @@ BaseType_t xNetworkInterfaceInitialise(void)
     else
     {
         DISABLE_INTERRUPT();
-        PHY_DISABLE_INTERRUPT();
+        ipconfigPIC32_PHY_DISABLE_INTERRUPT();
 
         // Link failed/stack reset
         s_tStats.linkFailures++;
