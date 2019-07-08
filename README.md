@@ -66,6 +66,8 @@ A couple of bugs in FreeRTOS+TCP and FreeRTOS+FAT can result in heap corruption 
 
 Compiler versions later than v1.44 would sometimes output the assembler code in `PIC32Arch.h` incorrectly (bad register allocations) depending on optimisation settings etc. This accounts for reports that the driver was not working. A modification to the constraints seems to have cured this problem for v2.20 but has only been tested using `-O0` and `-O1`.
 
+The FTP and web server are dependent on FreeRTOS+FAT. If you don't need that functionality, you can eliminate the dependency by excluding the source files for those components in the `TCPIP` project.
+
 ## How to use
 
 The program presents a terminal interface via UART2 and a command line interface on TCP port 12345. The PIC32 EF Starter Kit includes a MCP2221 USB to UART converter chip so you can use either interface. For the other kits, you can only use the TCP CLI unless you're willing to add a RS232 interface via the expansion connector.
@@ -74,7 +76,7 @@ The UART terminal interface was mainly used for testing and debugging so there a
 
 The Packet Test task was used to evaluate performance and latency. The LEDs are toggled at various points in time. By using a scope, you can get an idea of how the stack and the hardware are performing. For example, if one Starter Kit is configured as the transmitter and another as a receiver, you can probe LED1 on the transmitter to see when the timer interrupt triggered and probe LED3 on the receiver to see when the packet arrived.
 
-The web server and ftp server parts of the FreeRTOS+TCP demo will also run on the PIC32. The web server demo files are stored in a blob containing a FAT file system prepared using Linux. This blob resides in Flash and is mounted in `/www`. I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This allows a small RAM disk to be created that will pass the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo. The RAM disk is mounted in `/ram`. This arrangement reduces RAM usage considerably and allows the demo to work on the MX class microcontroller too.
+The web server and FTP server parts of the FreeRTOS+TCP demo will also run on the PIC32. The web server demo files are stored in a blob containing a FAT file system prepared using Linux. This blob resides in Flash and is mounted in `/www`. I hacked `ff_format.c` to allow the RAM disk to be formatted with FAT12. This allows a small RAM disk to be created that will pass the `vCreateAndVerifyExampleFiles()` test from the FreeRTOS+TCP demo. The RAM disk is mounted in `/ram`. This arrangement reduces RAM usage considerably and allows the demo to work on the MX class microcontroller too.
 
 ## Ethernet driver
 
@@ -99,7 +101,7 @@ The FreeRTOS+TCP configuration defined in `FreeRTOSIPConfig.h` must contain the 
 #define ipconfigETHERNET_DRIVER_FILTERS_PACKETS     (0)
 #define ipconfigETHERNET_DRIVER_FILTERS_FRAME_TYPES (1)
 ```
-You will likely need to create a small driver for the PHY you are using. Three drivers are provided: one for the DP83848 PHY used in the MX Starter Kit, one for the LAN8740A PHY used in the MZ Starter Kits and a simple LAN9303 driver. Note that this implementation assumes the PHY interrupt line is connected to the microcontroller to detect link state change events. PHY support is needed to use Wake-on-LAN or the Ethernet cable diagnostics - only the LAN8740A has all of these features. All PHYs allow the interface to be brought up and down (powered off).
+Unless you are using an already supported PHY, you will need to create a small driver. Three drivers are provided: one for the DP83848 PHY used in the MX Starter Kit, one for the LAN8740A PHY used in the MZ Starter Kits and a simple LAN9303 driver. Note that this implementation assumes the PHY interrupt line is connected to the microcontroller to detect link state change events. PHY support is needed to use Wake-on-LAN or the Ethernet cable diagnostics - only the LAN8740A has all of these features. All PHYs allow the interface to be brought up and down (powered off).
 
 The following configuration parameters are available. Values without defaults must be configured:
 
@@ -111,3 +113,17 @@ The following configuration parameters are available. Values without defaults mu
 `ipconfigPIC32_DRV_TASK_STACK_SIZE` - driver task stack size in words  
 `ipconfigPIC32_ETH_INT_PRIORITY` - Ethernet controller interrupt priority  
 `ipconfigPIC32_DRV_TASK_BLOCK_TICKS` - maximum time the driver waits for stack resources, defaults to portMAX_DELAY
+
+If you want to use one of the built-in PHY drivers, you can set the following configuration parameter:
+
+`ipconfigPIC32_PHY_DRIVER` - One of: `PIC32_PHY_DRIVER_DP83848`, `PIC32_PHY_DRIVER_LAN8740A`, `PIC32_PHY_DRIVER_LAN9303`
+
+The following configuration parameters describe the hardware configuration of your PHY:
+
+`ipconfigPIC32_PHY_ADDRESS` - PHY MII address  
+`ipconfigPIC32_PHY_INTERRUPT_VECTOR` - PIC32 interrupt vector for the PHY interrupt  
+`ipconfigPIC32_PHY_ASSERT_HW_RESET()` - Optional code to put the PHY in reset  
+`ipconfigPIC32_PHY_CLEAR_HW_RESET()` - Optional code to release the PHY from reset  
+`ipconfigPIC32_PHY_ENABLE_INTERRUPT()` - Prepare the PIC32 to accept PHY interrupts  
+`ipconfigPIC32_PHY_DISABLE_INTERRUPT()` - Mask PHY interrupts  
+`ipconfigPIC32_PHY_CLEAR_INTERRUPT()` - Acknowledge the PHY interrupt after processing  
