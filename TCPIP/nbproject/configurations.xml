@@ -52,7 +52,6 @@
           <itemPath>../FreeRTOS-Plus/Demo/Common/Demo_IP_Protocols/HTTP/FreeRTOS_HTTP_server.c</itemPath>
         </logicalFolder>
       </logicalFolder>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_ARP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_DHCP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_IP.c</itemPath>
       <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_Sockets.c</itemPath>
@@ -68,6 +67,7 @@
       <itemPath>DP83848.c</itemPath>
       <itemPath>LAN8740A.c</itemPath>
       <itemPath>LAN9303.c</itemPath>
+      <itemPath>FreeRTOS_ARP.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
