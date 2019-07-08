@@ -167,8 +167,9 @@ void HardwareConfigurePerformance(void)
     // Note: Erratum #7 on the PIC32MZ EC means that LEDs 1 and 2 won't work
     //       while the Ethernet Controller is enabled
     ANSELBCLR = _ANSELB_ANSB12_MASK | _ANSELB_ANSB13_MASK;  // SW1, SW2
+    CNPUBSET = _CNPUB_CNPUB12_MASK | _CNPUB_CNPUB13_MASK | _CNPUB_CNPUB14_MASK;
     ANSELHCLR = _ANSELH_ANSH0_MASK | _ANSELH_ANSH1_MASK;    // LED1, LED2
-    TRISHCLR = 0x07;
+    TRISHCLR = _TRISH_TRISH0_MASK | _TRISH_TRISH1_MASK | _TRISH_TRISH2_MASK;
 
     // Configure peripheral busses
 
@@ -363,7 +364,8 @@ void HardwareConfigurePerformance(void)
     IPC3bits.INT3IP = configKERNEL_INTERRUPT_PRIORITY;
 
     // I/O configuration for LEDs/switches
-    TRISDCLR = 0x07;
+    CNPUE = _CNPUE_CNPUE15_MASK | _CNPUE_CNPUE16_MASK | _CNPUE_CNPUE19_MASK;
+    TRISDCLR = _TRISD_TRISD0_MASK | _TRISD_TRISD1_MASK | _TRISD_TRISD2_MASK;
 
     // Disable SRAM wait states
     BMXCONCLR = _BMXCON_BMXWSDRM_MASK;
@@ -420,7 +422,7 @@ void HardwareConfigPeripherals(void)
 #if defined(__PIC32MZ__)
     LATHCLR = _LATH_LATH0_MASK | _LATH_LATH1_MASK | _LATH_LATH2_MASK;
 #elif defined(__PIC32MX__)
-    LATDCLR = 0x07;
+    LATDCLR = _LATD_LATD0_MASK | _LATD_LATD1_MASK | _LATD_LATD2_MASK;
 #endif
 
     Uart2Initialise(UART2_BAUD_RATE);
