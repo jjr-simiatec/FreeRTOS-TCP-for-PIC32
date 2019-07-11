@@ -99,6 +99,10 @@ static void ToggleEthInterface(void);
 static void RunEthernetSelfTest(void);
 extern void Toggle5kHzTraffic(void);
 
+#if defined(__32MZ2064DAB288__)
+static void DDRTest(void);
+#endif
+
 extern BaseType_t CLIToggle5kHzTraffic(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
 
 static const test_info_t s_TESTS[] = {
@@ -111,6 +115,9 @@ static const test_info_t s_TESTS[] = {
     {'7', &TestWOL,              "TEST WAKE ON LAN"          },
     {'8', &ToggleEthInterface,   "ETHERNET INTERFACE UP/DOWN"},
     {'9', &RunEthernetSelfTest,  "ETHERNET SELF TEST"        },
+#if defined(__32MZ2064DAB288__)
+    {'D', &DDRTest,              "EXTERNAL DDR TESTS"        },
+#endif
     {'R', &ResetBoard,           "SOFT RESET"                }
 };
 
@@ -591,3 +598,191 @@ void RegisterTestHarnessCLICommands(void)
         FreeRTOS_CLIRegisterCommand(&s_CLI_COMMAND_LIST[c]);
     }
 }
+
+#if defined(__32MZ2064DAB288__)
+
+//#define DDR_RAM_START   0xA8000000
+#define DDR_RAM_START   0x88000000
+#define DDR_RAM_SIZE    0x8000000
+//#define DDR_RAM_SIZE    0x4000000
+
+static void DumpMemory(const volatile void *pAddress, size_t len)
+{
+    const volatile uint32_t *p = (volatile uint32_t *) pAddress;
+
+    printf("\r\n");
+
+    size_t c = 0;
+    for(c = 0; c < len; c += 16, p += 4)
+    {
+        printf("%p: ", p);
+
+        printf("%08X %08X %08X %08X\r\n", p[0], p[1], p[2], p[3]);
+    }
+}
+
+#define RAM_TEST_REPORT_INTERVAL    65536U
+#define RAM_TEST_REPORT_STRING      "\x1B[10D%p"
+
+static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
+{
+	// W0
+	volatile uint8_t *pCurrentRam = pRam;
+
+    size_t c;
+	for(c = 0; c < nRamSize; c++, pCurrentRam++)
+    {
+        *pCurrentRam = 0;
+
+        if((c % RAM_TEST_REPORT_INTERVAL) == 0)
+        {
+            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+        }
+    }
+
+	// ^R0W1R1
+	pCurrentRam = pRam;
+
+	for(c = 0; c < nRamSize; c++, pCurrentRam++)
+	{
+		uint8_t nMask = 0x01;
+
+		do
+		{
+			if( *pCurrentRam & nMask )
+			{
+				return false;
+			}
+
+			*pCurrentRam |= nMask;
+
+			if((*pCurrentRam & nMask) == 0)
+			{
+				return false;
+			}
+
+			nMask <<= 1;
+		}
+		while( nMask );
+
+        if((c % RAM_TEST_REPORT_INTERVAL) == 0)
+        {
+            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+        }
+	}
+
+	// ^R1W0
+	pCurrentRam = pRam;
+
+	for(c = 0; c < nRamSize; c++, pCurrentRam++)
+	{
+		uint8_t nMask = 0x01;
+
+		do
+		{
+			if((*pCurrentRam & nMask) == 0)
+			{
+				return false;
+			}
+
+			*pCurrentRam &= ~nMask;
+
+			nMask <<= 1;
+		}
+		while( nMask );
+
+        if((c % RAM_TEST_REPORT_INTERVAL) == 0)
+        {
+            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+        }
+	}
+
+	// !^R0W1
+	pCurrentRam = pRam + nRamSize - 1;
+
+	for(c = 0; c < nRamSize; c++, pCurrentRam--)
+	{
+		uint8_t nMask = 0x80;
+
+		do
+		{
+			if(*pCurrentRam & nMask)
+			{
+				return false;
+			}
+
+			*pCurrentRam |= nMask;
+
+			nMask >>= 1;
+		}
+		while( nMask );
+
+        if((c % RAM_TEST_REPORT_INTERVAL) == 0)
+        {
+            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+        }
+	}
+
+	// !^R1W0
+	pCurrentRam = pRam + nRamSize - 1;
+
+	for(c = 0; c < nRamSize; c++, pCurrentRam--)
+	{
+		uint8_t nMask = 0x80;
+
+		do
+		{
+			if((*pCurrentRam & nMask) == 0)
+			{
+				return false;
+			}
+
+			*pCurrentRam &= ~nMask;
+
+			nMask >>= 1;
+		}
+		while( nMask );
+
+        if((c % RAM_TEST_REPORT_INTERVAL) == 0)
+        {
+            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+        }
+	}
+
+	// R0
+	pCurrentRam = pRam;
+
+	for(c = 0; c < nRamSize; c++, pCurrentRam++)
+	{
+		if( *pCurrentRam )
+			return false;
+
+        if((c % RAM_TEST_REPORT_INTERVAL) == 0)
+        {
+            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+        }
+	}
+
+	return true;
+}
+
+void DDRTest(void)
+{
+    DumpMemory((void *) DDR_RAM_START, 0x80);
+
+    size_t c;
+
+    for(c = 1; c <= 3; c++)
+    {
+        printf("\r\nPass %2lu: RAM test address: 0x--------", c);
+
+        //if( !BitRAMTest(0x80, (void *) 0x88000000) )
+        if( !BitRAMTest(DDR_RAM_SIZE, (void *) DDR_RAM_START) )
+        {
+            printf(" FAIL!\r\n");
+            break;
+        }
+    }
+}
+
+#endif

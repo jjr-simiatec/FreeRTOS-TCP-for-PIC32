@@ -195,12 +195,7 @@ void HardwareConfigurePerformance(void)
 
 #elif (__PIC32_FEATURE_SET0 == 'D')
 
-typedef struct {
-    unsigned quarters : 2;
-    unsigned units : 6;
-} quarter_nsec_t;
-
-#define QNSEC(f) (((uint8_t) f << 2) | ((uint8_t)(f * 4.0f) & 0x03))
+#define QNSEC(f) (((uint16_t) f << 2) | (uint8_t)((f - (int) f) * 4.0f))
 
 typedef struct {
     uint16_t tRFC;
@@ -210,42 +205,286 @@ typedef struct {
     uint8_t tRRD;
     uint8_t tWTR;
     uint8_t tRTP;
-    uint8_t tDLLK;
+    uint8_t DLLK;
     uint8_t tRAS;
-    uint16_t tRC;
+    uint8_t tRC;
     uint8_t tFAW;
-    uint8_t tMRD;
-    uint8_t tXP;
-    uint8_t tCKE;
+    uint8_t MRD;
+    uint8_t XP;
+    uint8_t CKE;
     uint8_t RL;
-    uint8_t tRFI;
+    uint16_t tRFI;
     uint8_t WL;
     uint8_t BL;
 } sdram_timing_params_t;
 
-static const sdram_timing_params_t tCONTROLLER_MINIMUMS = {
-    0,
-    QNSEC(25.0),
-    QNSEC(20.0),
-    QNSEC(20.0),
-    QNSEC(10.0),
-    QNSEC(10.0),
-    QNSEC(10.0)
+typedef struct {
+    uint8_t minlimit;
+    uint8_t rqper;
+    uint8_t mincmd;
+} sdram_arb_params_t;
+
+// FBGA marking: D9SBC == MT47H64M16NF-25E XIT:M
+static const sdram_timing_params_t tMT47H64M16NF_25E = {
+    QNSEC(127.5f),  // tRFC Idd
+    QNSEC(15.0f),   // tWR
+    QNSEC(12.5f),   // tRP Idd
+    QNSEC(12.5f),   // tRCD Idd
+    QNSEC(10.0f),   // tRRD Idd
+    QNSEC( 7.5f),   // tWTR
+    QNSEC( 7.5f),   // tRTP
+    200,            // DLLK
+    QNSEC(45.0f),   // tRAS Idd
+    QNSEC(57.5f),   // tRC Idd
+    QNSEC(45.0f),   // tFAW
+    2,              // MRD
+    2,              // XP
+    3,              // CKE
+    5,              // RL/CL Idd
+    QNSEC(7800.0f), // tRFI
+    4,              // WL
+    2               // BL
 };
 
-static const sdram_timing_params_t tMT47H64M16NF_25E = {
-    0,
-    QNSEC(15.0),
-    QNSEC(12.5),
-    QNSEC(12.5),
-    QNSEC(10.0),
-    QNSEC( 7.5),
-    QNSEC( 7.5)
+static const sdram_arb_params_t tDDR_ARB_PARAMS[] = {
+    {0x1F, 0xFF, 0x04},
+    {0x1F, 0xFF, 0x10},
+    {0x1F, 0xFF, 0x10},
+    {0x04, 0xFF, 0x04},
+    {0x04, 0xFF, 0x04}
 };
+
+#define DDR_DRAM_CLK_PERIOD QNSEC(2.5f)
+#define DDR_CTRL_CLK_PERIOD (DDR_DRAM_CLK_PERIOD * 2)
+
+#define MPLL_IDIV           3
+#define MPLL_MULT           50
+#define MPLL_ODIV1          2
+#define MPLL_ODIV2          1
+
+// DDR addressing scheme: CS, ROW, BA, COL
+#define DDR_CS_BITS         1
+#define DDR_ROW_BITS        13
+#define DDR_BA_BITS         3
+#define DDR_COL_BITS        10
+
+#define QNSEC_DIV(n, d) (((uint16_t)(n) + (d) - QNSEC(1.0f)) / (d))
+#define QNSEC_TICKS(q)  (QNSEC_DIV(q, DDR_CTRL_CLK_PERIOD))
+
+typedef enum {
+    DRAM_CMD_DSELECT = 0xFFFU,
+    DRAM_CMD_PCALL   = 0x401U,
+    DRAM_CMD_REF     = 0x801U,
+    DRAM_CMD_LDM     = 0x001U
+} dram_cmd_t;
+
+#define DRAM_CMD_LDREG(ba)   (DRAM_CMD_LDM | (ba << 12))
+
+#define DRAM_CMD_PCALL_ALL_BANKS    0x0400
+
+typedef enum {
+    DRAM_MR_BURST_LEN_POSITION = 0,
+    DRAM_MR_BURST_LEN_4        = 0x02 << DRAM_MR_BURST_LEN_POSITION,
+    DRAM_MR_BURST_LEN_8        = 0x03 << DRAM_MR_BURST_LEN_POSITION,
+    DRAM_MR_BURST_INTERLEAVED  = 1 << 3,
+    DRAM_MR_CL_POSITION        = 4,
+    DRAM_MR_DLL_RESET          = 1 << 8,
+    DRAM_MR_WR_POSITION        = 9,
+    DRAM_MR_SLOW_EXIT          = 1 << 12
+} dram_mr_t;
+
+typedef enum {
+    DRAM_EMR_DLL_DISABLED     = 1 << 0,
+    DRAM_EMR_ODS_REDUCED      = 1 << 1,
+    DRAM_EMR_CAL_POSITION     = 3,
+    DRAM_EMR_TERM_R150        = (0 << 2) | (1 << 6),
+    DRAM_EMR_OCD_POSITION     = 7,
+    DRAM_EMR_OCD_EXIT         = 0x00 << DRAM_EMR_OCD_POSITION,
+    DRAM_EMR_OCD_DEFAULTS     = 0x07 << DRAM_EMR_OCD_POSITION,
+    DRAM_EMR_DQS_DISABLE      = 1 << 10,
+    DRAM_EMR_RDQS_ENABLE      = 1 << 11,
+    DRAM_EMR_OUTPUTS_DISABLED = 1 << 12
+} dram_emr_t;
+
+void DRAM_Initialise(const sdram_timing_params_t *p)
+{
+    uint16_t MR = DRAM_MR_BURST_LEN_8 | (p->RL << DRAM_MR_CL_POSITION)
+                  | ((QNSEC_DIV(p->tWR, DDR_DRAM_CLK_PERIOD) - 1) << DRAM_MR_WR_POSITION);
+    uint16_t EMR = DRAM_EMR_TERM_R150;
+
+    struct {
+        uint16_t cmd;
+        uint16_t modeAddr;
+        uint16_t timing;
+    } tDRAM_INIT_CMDS[] = {
+        {DRAM_CMD_DSELECT, 0x0000, QNSEC(400)},
+
+        {DRAM_CMD_PCALL, DRAM_CMD_PCALL_ALL_BANKS, p->tRP + DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_LDREG(2), 0x0000, p->MRD * DDR_DRAM_CLK_PERIOD},
+        {DRAM_CMD_LDREG(3), 0x0000, p->MRD * DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_LDREG(1), EMR, p->MRD * DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_LDREG(0), MR | DRAM_MR_DLL_RESET, p->MRD * DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_PCALL, DRAM_CMD_PCALL_ALL_BANKS, p->tRP + DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_REF, 0x0000, p->tRFC},
+        {DRAM_CMD_REF, 0x0000, p->tRFC},
+
+        {DRAM_CMD_LDREG(0), MR, p->MRD * DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_LDREG(1), EMR | DRAM_EMR_OCD_DEFAULTS, p->MRD * DDR_DRAM_CLK_PERIOD},
+
+        {DRAM_CMD_LDREG(1), EMR, p->DLLK * DDR_DRAM_CLK_PERIOD}
+    };
+
+    volatile uint32_t *pCmd1Array = &DDRCMD10;
+    volatile uint32_t *pCmd2Array = &DDRCMD20;
+
+    size_t c;
+    for(c = 0; c < _countof(tDRAM_INIT_CMDS); c++)
+    {
+        uint32_t delay = max(QNSEC_DIV(tDRAM_INIT_CMDS[c].timing, DDR_DRAM_CLK_PERIOD), 2) - 2;
+        pCmd1Array[c] = (tDRAM_INIT_CMDS[c].cmd & 0xFFF) | (DRAM_CMD_DSELECT << 12)
+                        | ((tDRAM_INIT_CMDS[c].modeAddr & 0xFF) << 24);
+        pCmd2Array[c] = (tDRAM_INIT_CMDS[c].modeAddr >> 8)
+                        | ((tDRAM_INIT_CMDS[c].cmd & 0x7000) >> 4)
+                        | (delay << 11);
+    }
+
+    DDRCMDISSUE = (_countof(tDRAM_INIT_CMDS) << _DDRCMDISSUE_NUMHOSTCMDS_POSITION)
+                  | _DDRCMDISSUE_VALID_MASK;
+
+    DDRMEMCON = _DDRMEMCON_STINIT_MASK;
+
+    while(DDRCMDISSUE & _DDRCMDISSUE_VALID_MASK);
+}
 
 void DDR2_Configure(const sdram_timing_params_t *p)
 {
-    _nop();
+    // Configure MPLL
+    CFGMPLL = (MPLL_IDIV << _CFGMPLL_MPLLIDIV_POSITION)
+              | (MPLL_MULT << _CFGMPLL_MPLLMULT_POSITION)
+              | (MPLL_ODIV1 << _CFGMPLL_MPLLODIV1_POSITION)
+              | (MPLL_ODIV2 << _CFGMPLL_MPLLODIV2_POSITION);
+
+    while((CFGMPLL & (_CFGMPLL_MPLLRDY_MASK | _CFGMPLL_MPLLVREGRDY_MASK))
+          != (_CFGMPLL_MPLLRDY_MASK | _CFGMPLL_MPLLVREGRDY_MASK));
+
+    PMD7CLR = _PMD7_DDR2CMD_MASK;
+
+    // Initialise PHY using recommended settings from DS60001321C
+    DDRSCLCFG0 = _DDRSCLCFG0_BURST8_MASK | _DDRSCLCFG0_DDR2_MASK
+                 | (p->RL << _DDRSCLCFG0_RCASLAT_POSITION)
+                 | _DDRSCLCFG0_ODTCSW_MASK;
+    DDRSCLCFG1 = _DDRSCLCFG1_SCLCSEN_MASK
+                 | (p->WL << _DDRSCLCFG1_WCASLAT_POSITION);
+
+    DDRPHYPADCON = _DDRPHYPADCON_ODTSEL_MASK | _DDRPHYPADCON_ODTEN_MASK
+                   | (2 << _DDRPHYPADCON_ODTPDCAL_POSITION)
+                   | (2 << _DDRPHYPADCON_ODTPUCAL_POSITION)
+                   | _DDRPHYPADCON_NOEXTDLL_MASK | _DDRPHYPADCON_WRCMDDLY_MASK
+                   | _DDRPHYPADCON_HALFRATE_MASK
+                   | (14 << _DDRPHYPADCON_DRVSTRNFET_POSITION)
+                   | (14 << _DDRPHYPADCON_DRVSTRPFET_POSITION)
+                   | _DDRPHYPADCON_RCVREN_MASK
+                   | (2 << _DDRPHYPADCON_PREAMBDLY_POSITION);
+
+    DDRSCLLAT = (3 << _DDRSCLLAT_CAPCLKDLY_POSITION)
+                | (4 << _DDRSCLLAT_DDRCLKDLY_POSITION);
+
+    DDRPHYDLLR = (0x10 << _DDRPHYDLLR_RECALIBCNT_POSITION)
+                 | (0 << _DDRPHYDLLR_DISRECALIB_POSITION)
+                 | (3 << _DDRPHYDLLR_DLYSTVAL_POSITION);
+
+    // Initialise the DDR Controller
+    DDRMEMWIDTH = _DDRMEMWIDTH_HALFRATE_MASK;
+
+    size_t c;
+    for(c = 0; c < _countof(tDDR_ARB_PARAMS); c++)
+    {
+        DDRTSEL = c * _DDRMINLIM_MINLIMIT_LENGTH;
+        DDRMINLIM = tDDR_ARB_PARAMS[c].minlimit;
+
+        DDRTSEL = c * _DDRRQPER_RQPER_LENGTH;
+        DDRRQPER = tDDR_ARB_PARAMS[c].rqper;
+
+        DDRTSEL = c * _DDRMINCMD_MINCMD_LENGTH;
+        DDRMINCMD = tDDR_ARB_PARAMS[c].mincmd;
+    }
+
+    // Column address bits <= 13 so column high mask/position not programmed
+    // Only one chip select so chip select mask/position not programmed
+    DDRMEMCFG0 = ((DDR_COL_BITS + DDR_BA_BITS) << _DDRMEMCFG0_RWADDR_POSITION)
+                 | (DDR_COL_BITS << _DDRMEMCFG0_BNKADDR_POSITION);
+    DDRMEMCFG1 = (1 << DDR_ROW_BITS) - 1;
+    DDRMEMCFG2 = 0;
+    DDRMEMCFG3 = (1 << DDR_COL_BITS) - 1;
+    DDRMEMCFG4 = (1 << DDR_BA_BITS) - 1;
+
+    DDRREFCFG = ((QNSEC_TICKS(p->tRFI) - 2) << _DDRREFCFG_REFCNT_POSITION)
+                | ((QNSEC_TICKS(p->tRFC) - 1) << _DDRREFCFG_REFDLY_POSITION)
+                | (7 << _DDRREFCFG_MAXREFS_POSITION);
+
+    DDRPWRCFG = _DDRPWRCFG_ASLFREFEN_MASK
+                | (8 << _DDRPWRCFG_PWRDNDLY_POSITION)
+                | (17 << _DDRPWRCFG_SLFREFDLY_POSITION);
+
+    uint8_t nxtdatavdly = p->RL + 4;
+    uint8_t w2rdly = QNSEC_TICKS(p->tWTR) + p->WL + p->BL;
+    uint8_t w2rcsdly = max(w2rdly - 1, 3);
+    uint8_t w2pchrgdly = QNSEC_TICKS(p->tWR) + p->WL + p->BL;
+    uint16_t slfrefexdly = ((p->DLLK + 1) / 2) - 2;
+
+    DDRDLYCFG0 = ((w2rdly & 0x0F) << _DDRDLYCFG0_W2RDLY_POSITION)
+                 | ((w2rcsdly & 0x0F) << _DDRDLYCFG0_W2RCSDLY_POSITION)
+                 | ((p->BL - 1) << _DDRDLYCFG0_R2RDLY_POSITION)
+                 | (p->BL << _DDRDLYCFG0_R2RCSDLY_POSITION)
+                 | ((p->BL - 1) << _DDRDLYCFG0_W2WDLY_POSITION)
+                 | ((p->BL - 1) << _DDRDLYCFG0_W2WCSDLY_POSITION)
+                 | ((p->BL + 2) << _DDRDLYCFG0_R2WDLY_POSITION)
+                 | ((p->RL - p->WL + 3) << _DDRDLYCFG0_RMWDLY_POSITION);
+    DDRDLYCFG1 = ((p->CKE - 1) << _DDRDLYCFG1_SLFREFMINDLY_POSITION)
+                 | ((slfrefexdly & 0xFF) << _DDRDLYCFG1_SLFREFEXDLY_POSITION)
+                 | ((p->CKE - 1) << _DDRDLYCFG1_PWRDNMINDLY_POSITION)
+                 | (max(p->XP - 1, p->CKE - 1) << _DDRDLYCFG1_PWRDNEXDLY_POSITION)
+                 | ((w2pchrgdly >> _DDRDLYCFG2_W2PCHRGDLY_LENGTH) << _DDRDLYCFG1_W2PCHRGDLY4_POSITION)
+                 | ((w2rdly >> _DDRDLYCFG0_W2RDLY_LENGTH) << _DDRDLYCFG1_W2RDLY4_POSITION)
+                 | ((w2rcsdly >> _DDRDLYCFG0_W2RCSDLY_LENGTH) << _DDRDLYCFG1_W2RCSDLY4_POSITION)
+                 | ((nxtdatavdly >> _DDRXFERCFG_NXTDATAVDLY_LENGTH) << _DDRDLYCFG1_NXTDATAVDLY4_POSITION)
+                 | ((slfrefexdly >> 8) << _DDRDLYCFG1_SLFREFEXDLY8_POSITION);
+    DDRDLYCFG2 = (QNSEC_TICKS(p->tRP) << _DDRDLYCFG2_PCHRGALLDLY_POSITION)
+                 | ((QNSEC_TICKS(p->tRTP) + p->BL - 2) << _DDRDLYCFG2_R2PCHRGDLY_POSITION)
+                 | ((w2pchrgdly & 0x0F) << _DDRDLYCFG2_W2PCHRGDLY_POSITION)
+                 | ((QNSEC_TICKS(p->tRRD) - 1) << _DDRDLYCFG2_RAS2RASDLY_POSITION)
+                 | ((QNSEC_TICKS(p->tRCD) - 1) << _DDRDLYCFG2_RAS2CASDLY_POSITION)
+                 | ((QNSEC_TICKS(p->tRP) - 1) << _DDRDLYCFG2_PCHRG2RASDLY_POSITION)
+                 | ((p->RL + 3) << _DDRDLYCFG2_RBENDDLY_POSITION);
+    DDRDLYCFG3 = ((QNSEC_TICKS(p->tRAS) - 1) << _DDRDLYCFG3_RAS2PCHRGDLY_POSITION)
+                 | ((QNSEC_TICKS(p->tRC) - 1) << _DDRDLYCFG3_RAS2RASSBNKDLY_POSITION)
+                 | ((QNSEC_TICKS(p->tFAW) - 1) << _DDRDLYCFG3_FAWTDLY_POSITION);
+
+    DDRODTCFG = 0;
+    DDRODTENCFG = _DDRODTENCFG_ODTWEN_MASK;
+    DDRODTCFG = ((p->RL - 3) << _DDRODTCFG_ODTRDLY_POSITION)
+                | ((p->WL - 3) << _DDRODTCFG_ODTWDLY_POSITION)
+                | (2 << _DDRODTCFG_ODTRLEN_POSITION)
+                | (3 << _DDRODTCFG_ODTWLEN_POSITION);
+
+    DDRXFERCFG = ((p->WL - 2) << _DDRXFERCFG_NXTDATRQDLY_POSITION)
+                 | ((nxtdatavdly & 0x0F) << _DDRXFERCFG_NXTDATAVDLY_POSITION)
+                 | ((p->RL - 2) << _DDRXFERCFG_RDATENDLY_POSITION)
+                 | (3 << _DDRXFERCFG_MAXBURST_POSITION);
+
+    DRAM_Initialise(p);
+
+    DDRMEMCON = _DDRMEMCON_STINIT_MASK | _DDRMEMCON_INITDN_MASK;
+
+    DDRSCLSTART = _DDRSCLSTART_SCLEN_MASK | _DDRSCLSTART_SCLSTART_MASK;
+
+    while((DDRSCLSTART & _DDRSCLSTART_SCLUBPASS_MASK) == 0);
 }
 
 void HardwareConfigurePerformance(void)
