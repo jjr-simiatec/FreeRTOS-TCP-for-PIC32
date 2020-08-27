@@ -22,6 +22,7 @@
 #include <FreeRTOS_TCP_Server.h>
 // C Runtime
 #include <stdbool.h>
+#include <strings.h>
 
 #include "ff_ramdiskex.h"
 #include "TestHarness.h"
@@ -44,6 +45,9 @@ static const char pBOARD_NAME[] = "pic32mz";
 
 #define RAND_MULTIPLIER     0x015A4E35UL
 #define RAND_INCREMENT      1UL
+
+#define TCP_CLI_TASK_STACK_SIZE     190U
+#define TCP_CLI_SERVER_PORT         12345U
 
 static const struct xSERVER_CONFIG xServerConfiguration[] =
 {
@@ -120,7 +124,7 @@ portTASK_FUNCTION(Task2, pParams)
     vRegisterSampleCLICommands();
     RegisterTestHarnessCLICommands();
 
-    vStartTCPCommandInterpreterTask(configMINIMAL_STACK_SIZE * 2, 12345, tskIDLE_PRIORITY + 1);
+    vStartTCPCommandInterpreterTask(TCP_CLI_TASK_STACK_SIZE, TCP_CLI_SERVER_PORT, tskIDLE_PRIORITY + 1);
 
     for( ; ; )
     {
@@ -134,3 +138,4 @@ uint32_t ulApplicationGetNextSequenceNumber(uint32_t ulSourceAddress, uint16_t u
 	s_ulNextRand = (RAND_MULTIPLIER * s_ulNextRand) + RAND_INCREMENT;
 	return (int)(s_ulNextRand >> 16U) & 0x7FFFUL;
 }
+

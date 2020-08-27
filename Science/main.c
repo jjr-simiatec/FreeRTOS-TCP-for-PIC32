@@ -95,9 +95,9 @@ int main(int argc, char *argv[])
 
     portDISABLE_INTERRUPTS();
 
-    xTaskCreate(&Task1, "Task1", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask1);
-    xTaskCreate(&Task2, "Task2", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 1, &g_hTask2);
-    xTaskCreate(&PacketTask, "PacketTx", configMINIMAL_STACK_SIZE * 4, NULL, tskIDLE_PRIORITY + 4, &g_hPacketTask);
+    xTaskCreate(&Task1, "Task1", 250, NULL, tskIDLE_PRIORITY + 1, &g_hTask1);
+    xTaskCreate(&Task2, "Task2", 620, NULL, tskIDLE_PRIORITY + 1, &g_hTask2);
+    xTaskCreate(&PacketTask, "PacketTx", 160, NULL, tskIDLE_PRIORITY + 4, &g_hPacketTask);
 
 #if defined(__PIC32MZ__) && (__PIC32_FEATURE_SET0 == 'D')
     FreeRTOS_IPInit(pIP_ADDRESS, pNET_MASK, pGATEWAY_ADDRESS, pDNS_ADDRESS, pDEVEL_MAC_ADDR);
@@ -364,14 +364,20 @@ void DRAM_Initialise(const sdram_timing_params_t *p)
 
 void DDR2_Configure(const sdram_timing_params_t *p)
 {
-    // Configure MPLL
-    CFGMPLL = (MPLL_IDIV << _CFGMPLL_MPLLIDIV_POSITION)
-              | (MPLL_MULT << _CFGMPLL_MPLLMULT_POSITION)
-              | (MPLL_ODIV1 << _CFGMPLL_MPLLODIV1_POSITION)
-              | (MPLL_ODIV2 << _CFGMPLL_MPLLODIV2_POSITION);
+    CFGMPLL &= ~_CFGMPLL_MPLLVREGDIS_MASK;
+    while((CFGMPLL & _CFGMPLL_MPLLVREGRDY_MASK) == 0);
 
-    while((CFGMPLL & (_CFGMPLL_MPLLRDY_MASK | _CFGMPLL_MPLLVREGRDY_MASK))
-          != (_CFGMPLL_MPLLRDY_MASK | _CFGMPLL_MPLLVREGRDY_MASK));
+    // Configure MPLL
+    CFGMPLL &= ~(_CFGMPLL_MPLLIDIV_MASK | _CFGMPLL_MPLLMULT_MASK
+                 | _CFGMPLL_MPLLODIV1_MASK | _CFGMPLL_MPLLODIV2_MASK);
+
+    CFGMPLL |= (MPLL_IDIV << _CFGMPLL_MPLLIDIV_POSITION)
+                | (MPLL_MULT << _CFGMPLL_MPLLMULT_POSITION)
+                | (MPLL_ODIV1 << _CFGMPLL_MPLLODIV1_POSITION)
+                | (MPLL_ODIV2 << _CFGMPLL_MPLLODIV2_POSITION);
+
+    CFGMPLL &= ~_CFGMPLL_MPLLDIS_MASK;
+    while((CFGMPLL & _CFGMPLL_MPLLRDY_MASK) == 0);
 
     PMD7CLR = _PMD7_DDR2CMD_MASK;
 
@@ -384,7 +390,7 @@ void DDR2_Configure(const sdram_timing_params_t *p)
 
     DDRPHYPADCON = _DDRPHYPADCON_ODTSEL_MASK | _DDRPHYPADCON_ODTEN_MASK
                    | (2 << _DDRPHYPADCON_ODTPDCAL_POSITION)
-                   | (2 << _DDRPHYPADCON_ODTPUCAL_POSITION)
+                   | (3 << _DDRPHYPADCON_ODTPUCAL_POSITION)
                    | _DDRPHYPADCON_NOEXTDLL_MASK | _DDRPHYPADCON_WRCMDDLY_MASK
                    | _DDRPHYPADCON_HALFRATE_MASK
                    | (14 << _DDRPHYPADCON_DRVSTRNFET_POSITION)
@@ -425,14 +431,13 @@ void DDR2_Configure(const sdram_timing_params_t *p)
     DDRMEMCFG4 = (1 << DDR_BA_BITS) - 1;
 
     DDRREFCFG = ((QNSEC_TICKS(p->tRFI) - 2) << _DDRREFCFG_REFCNT_POSITION)
-                | ((QNSEC_TICKS(p->tRFC) - 1) << _DDRREFCFG_REFDLY_POSITION)
+                | ((QNSEC_TICKS(p->tRFC) - 2) << _DDRREFCFG_REFDLY_POSITION)
                 | (7 << _DDRREFCFG_MAXREFS_POSITION);
 
-    DDRPWRCFG = _DDRPWRCFG_ASLFREFEN_MASK
-                | (8 << _DDRPWRCFG_PWRDNDLY_POSITION)
+    DDRPWRCFG = (8 << _DDRPWRCFG_PWRDNDLY_POSITION)
                 | (17 << _DDRPWRCFG_SLFREFDLY_POSITION);
 
-    uint8_t nxtdatavdly = p->RL + 4;
+    uint8_t nxtdatavdly = p->WL;
     uint8_t w2rdly = QNSEC_TICKS(p->tWTR) + p->WL + p->BL;
     uint8_t w2rcsdly = max(w2rdly - 1, 3);
     uint8_t w2pchrgdly = QNSEC_TICKS(p->tWR) + p->WL + p->BL;
@@ -466,16 +471,15 @@ void DDR2_Configure(const sdram_timing_params_t *p)
                  | ((QNSEC_TICKS(p->tRC) - 1) << _DDRDLYCFG3_RAS2RASSBNKDLY_POSITION)
                  | ((QNSEC_TICKS(p->tFAW) - 1) << _DDRDLYCFG3_FAWTDLY_POSITION);
 
-    DDRODTCFG = 0;
-    DDRODTENCFG = _DDRODTENCFG_ODTWEN_MASK;
     DDRODTCFG = ((p->RL - 3) << _DDRODTCFG_ODTRDLY_POSITION)
                 | ((p->WL - 3) << _DDRODTCFG_ODTWDLY_POSITION)
                 | (2 << _DDRODTCFG_ODTRLEN_POSITION)
                 | (3 << _DDRODTCFG_ODTWLEN_POSITION);
+    DDRODTENCFG = _DDRODTENCFG_ODTWEN_MASK;
 
     DDRXFERCFG = ((p->WL - 2) << _DDRXFERCFG_NXTDATRQDLY_POSITION)
                  | ((nxtdatavdly & 0x0F) << _DDRXFERCFG_NXTDATAVDLY_POSITION)
-                 | ((p->RL - 2) << _DDRXFERCFG_RDATENDLY_POSITION)
+                 | ((p->RL - 3) << _DDRXFERCFG_RDATENDLY_POSITION)
                  | (3 << _DDRXFERCFG_MAXBURST_POSITION);
 
     DRAM_Initialise(p);

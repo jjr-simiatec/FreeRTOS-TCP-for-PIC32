@@ -20,6 +20,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
+#include <timers.h>
 // TCP/IP Stack
 #include <FreeRTOS_IP.h>
 // C Runtime
@@ -98,6 +99,7 @@ static void TestWOL(void);
 static void ToggleEthInterface(void);
 static void RunEthernetSelfTest(void);
 extern void Toggle5kHzTraffic(void);
+static void AliveTimerCallback(TimerHandle_t xTimer);
 
 #if defined(__32MZ2064DAB288__)
 static void DDRTest(void);
@@ -128,6 +130,7 @@ static const CLI_Command_Definition_t s_CLI_COMMAND_LIST[] = {
 };
 
 static size_t s_nTestMenuTopIndx = 0;
+static TimerHandle_t s_hAlivenessTimer;
 uint8_t *g_pTestBuffer;
 
 void vLoggingPrintf(const char *pcFormat, ...)
@@ -194,6 +197,9 @@ static void ShowMenuScreen(void)
 portTASK_FUNCTION(Task1, pParams)
 {
     portTASK_USES_FLOATING_POINT();
+
+    s_hAlivenessTimer = xTimerCreate("ALIVE?", pdMS_TO_TICKS(1000), pdTRUE, NULL, &AliveTimerCallback);
+    xTimerStart(s_hAlivenessTimer, portMAX_DELAY);
 
     g_pTestBuffer = pvPortMalloc(TEST_BUFFER_SIZE + 1);
 
@@ -599,12 +605,16 @@ void RegisterTestHarnessCLICommands(void)
     }
 }
 
-#if defined(__32MZ2064DAB288__)
+void AliveTimerCallback(TimerHandle_t xTimer)
+{
+#if defined(__PIC32MZ__)
+    LATHINV = 0x04;
+#elif defined(__PIC32MX__)
+    LATDINV = 0x04;
+#endif
+}
 
-//#define DDR_RAM_START   0xA8000000
-#define DDR_RAM_START   0x88000000
-#define DDR_RAM_SIZE    0x8000000
-//#define DDR_RAM_SIZE    0x4000000
+#if defined(__32MZ2064DAB288__)
 
 static void DumpMemory(const volatile void *pAddress, size_t len)
 {
@@ -622,11 +632,15 @@ static void DumpMemory(const volatile void *pAddress, size_t len)
 }
 
 #define RAM_TEST_REPORT_INTERVAL    65536U
-#define RAM_TEST_REPORT_STRING      "\x1B[10D%p"
 
-static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
+static const char pRAM_TEST_ADDR_STRING[] = "\x1B[8D%p";
+static const char pRAM_TEST_TYPE_FMT_STRING[] = "\x1B" "7 (%s)\x1B[K\x1B" "8";
+
+static uint32_t BitRAMTest(size_t nRamSize, uint8_t *pRam)
 {
 	// W0
+    printf(pRAM_TEST_TYPE_FMT_STRING, "W0");
+
 	volatile uint8_t *pCurrentRam = pRam;
 
     size_t c;
@@ -636,11 +650,13 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 
         if((c % RAM_TEST_REPORT_INTERVAL) == 0)
         {
-            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+            printf(pRAM_TEST_ADDR_STRING, pCurrentRam);
         }
     }
 
 	// ^R0W1R1
+    printf(pRAM_TEST_TYPE_FMT_STRING, "^R0W1R1");
+
 	pCurrentRam = pRam;
 
 	for(c = 0; c < nRamSize; c++, pCurrentRam++)
@@ -649,16 +665,19 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 
 		do
 		{
-			if( *pCurrentRam & nMask )
+            uint8_t byte = *pCurrentRam;
+
+			if(byte & nMask)
 			{
-				return false;
+				return (uint32_t) pCurrentRam;
 			}
 
-			*pCurrentRam |= nMask;
+			*pCurrentRam = (byte | nMask);
+            byte = *pCurrentRam;
 
-			if((*pCurrentRam & nMask) == 0)
+			if((byte & nMask) == 0)
 			{
-				return false;
+				return (uint32_t) pCurrentRam;
 			}
 
 			nMask <<= 1;
@@ -667,11 +686,13 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 
         if((c % RAM_TEST_REPORT_INTERVAL) == 0)
         {
-            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+            printf(pRAM_TEST_ADDR_STRING, pCurrentRam);
         }
 	}
 
 	// ^R1W0
+    printf(pRAM_TEST_TYPE_FMT_STRING, "^R1W0");
+
 	pCurrentRam = pRam;
 
 	for(c = 0; c < nRamSize; c++, pCurrentRam++)
@@ -682,7 +703,7 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 		{
 			if((*pCurrentRam & nMask) == 0)
 			{
-				return false;
+				return (uint32_t) pCurrentRam;
 			}
 
 			*pCurrentRam &= ~nMask;
@@ -693,11 +714,13 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 
         if((c % RAM_TEST_REPORT_INTERVAL) == 0)
         {
-            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+            printf(pRAM_TEST_ADDR_STRING, pCurrentRam);
         }
 	}
 
 	// !^R0W1
+    printf(pRAM_TEST_TYPE_FMT_STRING, "!^R0W1");
+
 	pCurrentRam = pRam + nRamSize - 1;
 
 	for(c = 0; c < nRamSize; c++, pCurrentRam--)
@@ -708,7 +731,7 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 		{
 			if(*pCurrentRam & nMask)
 			{
-				return false;
+				return (uint32_t) pCurrentRam;
 			}
 
 			*pCurrentRam |= nMask;
@@ -719,11 +742,13 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 
         if((c % RAM_TEST_REPORT_INTERVAL) == 0)
         {
-            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+            printf(pRAM_TEST_ADDR_STRING, pCurrentRam);
         }
 	}
 
 	// !^R1W0
+    printf(pRAM_TEST_TYPE_FMT_STRING, "!^R1W0");
+
 	pCurrentRam = pRam + nRamSize - 1;
 
 	for(c = 0; c < nRamSize; c++, pCurrentRam--)
@@ -734,7 +759,7 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 		{
 			if((*pCurrentRam & nMask) == 0)
 			{
-				return false;
+				return (uint32_t) pCurrentRam;
 			}
 
 			*pCurrentRam &= ~nMask;
@@ -745,30 +770,49 @@ static bool BitRAMTest(size_t nRamSize, uint8_t *pRam)
 
         if((c % RAM_TEST_REPORT_INTERVAL) == 0)
         {
-            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+            printf(pRAM_TEST_ADDR_STRING, pCurrentRam);
         }
 	}
 
 	// R0
+    printf(pRAM_TEST_TYPE_FMT_STRING, "R0");
+
 	pCurrentRam = pRam;
 
 	for(c = 0; c < nRamSize; c++, pCurrentRam++)
 	{
 		if( *pCurrentRam )
-			return false;
+        {
+            return (uint32_t) pCurrentRam;
+        }
 
         if((c % RAM_TEST_REPORT_INTERVAL) == 0)
         {
-            printf(RAM_TEST_REPORT_STRING, pCurrentRam);
+            printf(pRAM_TEST_ADDR_STRING, pCurrentRam);
         }
 	}
 
-	return true;
+	return 0;
 }
 
 void DDRTest(void)
 {
-    DumpMemory((void *) DDR_RAM_START, 0x80);
+    uint32_t addr; uint32_t size;
+
+    printf("\r\nInput start address: ");
+
+    if( !InputHexValue(9, (char *) g_pTestBuffer, &addr) )
+    {
+        return;
+    }
+
+    printf("\r\nLength: ");
+    if( !InputHexValue(8, (char *) g_pTestBuffer, &size) )
+    {
+        return;
+    }
+
+    DumpMemory((void *) addr, 0x80);
 
     size_t c;
 
@@ -776,12 +820,16 @@ void DDRTest(void)
     {
         printf("\r\nPass %2lu: RAM test address: 0x--------", c);
 
-        //if( !BitRAMTest(0x80, (void *) 0x88000000) )
-        if( !BitRAMTest(DDR_RAM_SIZE, (void *) DDR_RAM_START) )
+        uint32_t result = BitRAMTest(size, (uint8_t *) addr);
+
+        if(result != 0)
         {
-            printf(" FAIL!\r\n");
+            printf(pRAM_TEST_ADDR_STRING, (void *) result);
+            printf("\x1B[11C** FAIL **\r\n");
             break;
         }
+
+        printf(" PASS\x1B[K");
     }
 }
 
