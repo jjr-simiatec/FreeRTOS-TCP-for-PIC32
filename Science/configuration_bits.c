@@ -142,6 +142,7 @@
 #pragma config SWDTPS = SPS1048576      // Sleep Mode Watchdog Timer Postscaler (1:1048576)
 
 // DEVCFG3
+#pragma config USERID = 0xFFFF          // Enter Hexadecimal value (Enter Hexadecimal value)
 #pragma config EXTDDRSIZE = DDR_SIZE_128MB// External DDR2 SDRAM Memory Size (External DDR2 Size is 128 MB)
 #pragma config FMIIEN = OFF             // Ethernet RMII/MII Enable (RMII Enabled)
 #pragma config FETHIO = ON              // Ethernet I/O Pin Select (Default Ethernet I/O)
@@ -193,24 +194,18 @@
 #pragma config SOSCBOOST = OFF          // Secondary Oscillator Boost Kick Start Enable bit (Normal start of the oscillator)
 #pragma config POSCGAIN = GAIN_2X       // Primary Oscillator Gain Control bits (2x gain setting)
 #pragma config POSCBOOST = OFF          // Primary Oscillator Boost Kick Start Enable bit (Normal start of the oscillator)
+#pragma config POSCFGAIN = GAIN_G3      // Primary Crystal Oscillator Final Gain Control (Gain is G3)
+#pragma config POSCTYPE = CRYSTAL_24MHZ // Primary Oscillator Type bits (24 MHz Crystal used as Primary Oscillator)
+#pragma config POSCAGCRNG = RANGE_1X    // Primary Crystal Oscillator AGC Lock Range bit (Range 1x)
+#pragma config POSCAGC = ON             // Primary Oscillator Auto Gain Control bit (POSC Auto Gain Control Enabled)
 #pragma config EJTAGBEN = NORMAL        // EJTAG Boot Enable (Normal EJTAG functionality)
 
 // DEVCP0
 #pragma config CP = OFF                 // Code Protect (Protection Disabled)
 
 // SEQ3
-
-// DEVADC0
-
-// DEVADC1
-
-// DEVADC2
-
-// DEVADC3
-
-// DEVADC4
-
-// DEVADC7
+#pragma config TSEQ = 0xFFFF            // Boot Flash True Sequence Number (Enter Hexadecimal value)
+#pragma config CSEQ = 0xFFFF            // Boot Flash Complement Sequence Number (Enter Hexadecimal value)
 
 #else
 

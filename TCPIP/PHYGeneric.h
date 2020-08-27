@@ -177,8 +177,8 @@ extern void PHYDeferredInterruptHandler(void);
 
 extern uint16_t PHYRead(uint8_t phyaddr, uint8_t reg);
 extern void PHYWrite(uint8_t phyaddr, uint8_t reg, uint16_t val);
-extern inline uint16_t PHY_MMDRead(uint8_t phyaddr, uint8_t devad, uint16_t reg);
-extern inline void PHY_MMDWrite(uint8_t phyaddr, uint8_t devad, uint16_t reg, uint16_t val);
+extern uint16_t PHY_MMDRead(uint8_t phyaddr, uint8_t devad, uint16_t reg);
+extern void PHY_MMDWrite(uint8_t phyaddr, uint8_t devad, uint16_t reg, uint16_t val);
 
 extern void PHYGetStatus(phy_status_t *pStatus);
 extern phy_tdr_state_t PHYCableDiagnostic(phy_tdr_cable_t type, float *pLenEstimate);

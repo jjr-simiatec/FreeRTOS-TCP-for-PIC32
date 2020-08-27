@@ -71,6 +71,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <strings.h>
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"

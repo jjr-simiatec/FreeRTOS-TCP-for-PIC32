@@ -36,10 +36,10 @@ The Ethernet module is the same across the PIC32 range and this driver has been 
 [**Note**: the replacement for DM320004, Microchip part no. DM320004-2, has minimal changes to the circuits but does use a different PHY from the original.]
 
 The following software and source code packages are required:
-  * MPLAB X IDE version 5.20 or later.
-  * MPLAB XC32 Compiler version 2.20 or later.
-  * FreeRTOS source code version 10.2.1.
-  * FreeRTOS+FAT source code version 160919a-MIT.
+  * MPLAB X IDE version 5.40 or later.
+  * MPLAB XC32 Compiler version 2.41 or later.
+  * FreeRTOS source code version 10.3.1.
+  * FreeRTOS+FAT source code version 191108a-MIT.
 
 [**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet. See the known issues section for more info.]
 

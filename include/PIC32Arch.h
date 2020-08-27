@@ -42,7 +42,8 @@ extern "C" {
 #define InterlockedCompareExchange(destination, exchange, comparand) __extension__({ \
     volatile BaseType_t *d = destination; \
     BaseType_t e = exchange, c = comparand, val = 0; \
-    asm volatile(".set noreorder\n" \
+    __asm__ volatile( \
+                 ".set noreorder\n" \
                  "1:  ll    $t0, %0\n" \
                  "    bne   $t0, %2, 2f\n" \
                  "    move  %1, $t0\n" \
