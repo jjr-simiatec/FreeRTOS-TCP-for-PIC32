@@ -35,6 +35,7 @@
 # External source symbolic links
 /FreeRTOS
 /FreeRTOS-Plus
+/FreeRTOS-Labs
 
 # SourceSafe?!
 vssver2.scc

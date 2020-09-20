@@ -244,7 +244,7 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
-        <appendMe value="-fno-short-double"/>
+        <appendMe value="-fno-short-double -std=c11"/>
       </C32>
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>
@@ -345,7 +345,7 @@
         <property key="common-include-directories"
                   value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -998,7 +998,7 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
-        <appendMe value="-fno-short-double"/>
+        <appendMe value="-fno-short-double -std=c11"/>
       </C32>
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>
@@ -1099,7 +1099,7 @@
         <property key="common-include-directories"
                   value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -1752,7 +1752,7 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
-        <appendMe value="-fno-short-double"/>
+        <appendMe value="-fno-short-double -std=c11"/>
       </C32>
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>
@@ -1853,7 +1853,7 @@
         <property key="common-include-directories"
                   value="..\include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -2506,7 +2506,7 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
-        <appendMe value="-fno-short-double"/>
+        <appendMe value="-fno-short-double -std=c11"/>
       </C32>
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>

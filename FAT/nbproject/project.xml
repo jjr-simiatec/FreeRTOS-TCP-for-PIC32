@@ -13,9 +13,9 @@
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
-                <sourceRootElem>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT</sourceRootElem>
                 <sourceRootElem>../include</sourceRootElem>
                 <sourceRootElem>.</sourceRootElem>
+                <sourceRootElem>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

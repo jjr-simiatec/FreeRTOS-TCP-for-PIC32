@@ -4,28 +4,28 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/FreeRTOSFATConfigDefaults.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/FreeRTOS_errno_FAT.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_crc.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_devices.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_dir.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_error.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_fat.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_fatdef.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_file.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_format.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_headers.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_ioman.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_locking.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_memory.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_old_config_defines.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_stdio.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_string.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_sys.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/include/ff_time.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/FreeRTOSFATConfigDefaults.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/FreeRTOS_errno_FAT.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_crc.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_devices.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_dir.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_error.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_fat.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_fatdef.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_file.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_format.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_headers.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_ioman.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_locking.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_memory.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_old_config_defines.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_stdio.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_string.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_sys.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/include/ff_time.h</itemPath>
       <itemPath>../include/FreeRTOSFATConfig.h</itemPath>
       <itemPath>../include/ff_ramdiskex.h</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/portable/common/ff_ramdisk.h</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/portable/common/ff_ramdisk.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -34,20 +34,20 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_crc.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_dev_support.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_dir.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_error.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_fat.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_file.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_format.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_ioman.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_locking.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_memory.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_stdio.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_string.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_sys.c</itemPath>
-      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_time.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_crc.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_dev_support.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_dir.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_error.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_fat.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_file.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_format.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_ioman.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_locking.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_memory.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_stdio.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_string.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_sys.c</itemPath>
+      <itemPath>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_time.c</itemPath>
       <itemPath>ff_ramdisk.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
@@ -57,9 +57,9 @@
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
-    <Elem>../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT</Elem>
     <Elem>../include</Elem>
     <Elem>.</Elem>
+    <Elem>../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -103,7 +103,7 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
             ex="true"
             overriding="false">
         <C32>
@@ -195,7 +195,7 @@
         </C32CPP>
         <C32Global>
           <property key="common-include-directories"
-                    value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include"/>
+                    value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include"/>
           <property key="gp-relative-option" value=""/>
           <property key="legacy-libc" value="false"/>
           <property key="relaxed-math" value="false"/>
@@ -203,7 +203,7 @@
           <property key="wpo-lto" value="false"/>
         </C32Global>
       </item>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_format.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_format.c"
             ex="false"
             overriding="false">
         <C32>
@@ -345,9 +345,9 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -880,7 +880,7 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
             ex="true"
             overriding="false">
         <C32>
@@ -972,7 +972,7 @@
         </C32CPP>
         <C32Global>
           <property key="common-include-directories"
-                    value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include"/>
+                    value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include"/>
           <property key="gp-relative-option" value=""/>
           <property key="legacy-libc" value="false"/>
           <property key="relaxed-math" value="false"/>
@@ -980,7 +980,7 @@
           <property key="wpo-lto" value="false"/>
         </C32Global>
       </item>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_format.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_format.c"
             ex="true"
             overriding="false">
         <C32>
@@ -1122,9 +1122,9 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -1632,7 +1632,7 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
             ex="true"
             overriding="false">
         <C32>
@@ -1650,7 +1650,7 @@
         <C32Global>
         </C32Global>
       </item>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_format.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_format.c"
             ex="true"
             overriding="false">
         <C32>
@@ -1792,9 +1792,9 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -2302,7 +2302,7 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_dev_support.c"
             ex="true"
             overriding="false">
         <C32>
@@ -2394,7 +2394,7 @@
         </C32CPP>
         <C32Global>
           <property key="common-include-directories"
-                    value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include"/>
+                    value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include"/>
           <property key="gp-relative-option" value=""/>
           <property key="legacy-libc" value="false"/>
           <property key="relaxed-math" value="false"/>
@@ -2402,7 +2402,7 @@
           <property key="wpo-lto" value="false"/>
         </C32Global>
       </item>
-      <item path="../FreeRTOS-Plus/Source/FreeRTOS-Plus-FAT/ff_format.c"
+      <item path="../FreeRTOS-Labs/Source/FreeRTOS-Plus-FAT/ff_format.c"
             ex="true"
             overriding="false">
         <C32>
@@ -2544,7 +2544,7 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\portable\common"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\portable\common"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>

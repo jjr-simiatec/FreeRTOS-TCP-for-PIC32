@@ -249,9 +249,9 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -883,9 +883,9 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -1517,9 +1517,9 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MX;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
         <property key="gp-relative-option" value=""/>
-        <property key="legacy-libc" value="true"/>
+        <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>
         <property key="mitcm" value=""/>
         <property key="mstacktcm" value="false"/>
@@ -2151,7 +2151,7 @@
       </C32CPP>
       <C32Global>
         <property key="common-include-directories"
-                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
+                  value="../include;..\FreeRTOS\Source\include;..\FreeRTOS\Source\portable\MPLAB\PIC32MZ;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\protocols\include;..\FreeRTOS-Plus\Source\FreeRTOS-Plus-TCP\portable\Compiler\GCC;..\FreeRTOS-Labs\Source\FreeRTOS-Plus-FAT\include;..\FreeRTOS-Plus\Demo\Common\Demo_IP_Protocols\include"/>
         <property key="gp-relative-option" value=""/>
         <property key="legacy-libc" value="false"/>
         <property key="mdtcm" value=""/>

@@ -1,8 +1,8 @@
 /*
  * RTOS/C Runtime Support
- * 
+ *
  * Copyright (c) 2016 John Robertson
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
  * published by the Free Software Foundation.
@@ -59,12 +59,12 @@ unsigned long ulGetRunTimeCounterValue(void)
 void vConfigureTimerForRunTimeStats(void)
 {
     s_nRunTimeCounter = 0;
-    
+
     T2CON = 0;
     TMR2 = 0;
 
     PR2 = (configPERIPHERAL_CLOCK_HZ / RUNTIME_COUNTER_HZ) - 1;
-    
+
     // Setup timer 2 interrupt priority to be above the kernel priority so
     // the timer jitter is not effected by the kernel activity.
     IPC2bits.T2IP = (configMAX_SYSCALL_INTERRUPT_PRIORITY + 1);
@@ -82,10 +82,10 @@ void vConfigureTimerForRunTimeStats(void)
 time_t time(time_t *tod)
 {
     uint32_t timeNow = s_tod.tv_sec;
-    
+
     if( tod )
         *tod = timeNow;
-    
+
     return timeNow;
 }
 
@@ -93,7 +93,7 @@ int gettimeofday(struct timeval *tv, void *tz)
 {
     if( tv )
         *tv = s_tod;
-    
+
     return 0;
 }
 
@@ -109,7 +109,7 @@ int settimeofday(const struct timeval *tv, void *tz)
 
         s_tod = *tv;
     }
-        
+
     return 0;
 }
 
@@ -139,18 +139,18 @@ void vApplicationSetupTickTimerInterrupt(void)
 
 #endif
 
-void vApplicationStackOverflowHook(TaskHandle_t pxTask, const char *pcTaskName)
+void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
 {
     /* Run time task stack overflow checking is performed if
     configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook	function is
     called if a task stack overflow is detected.  Note the system/interrupt
     stack is not checked. */
     taskDISABLE_INTERRUPTS();
-    
+
 #ifdef __DEBUG
     __builtin_software_breakpoint();
 #endif // __DEBUG
-    
+
     for( ; ; )
     {
         _wait();
@@ -202,7 +202,7 @@ void _general_exception_handler(void)
 
     // Will be a _EXCCODE_* values as per cp0defs.h
     uint8_t _excep_code __attribute__((unused)) = (g_excepCause & _CP0_CAUSE_EXCCODE_MASK) >> _CP0_CAUSE_EXCCODE_POSITION;
-    
+
     // Examine _excep_code to identify the type of exception.#
     // Examine g_excepAddr to find the address that the exception occurred
 #ifdef __DEBUG
