@@ -106,6 +106,8 @@ static void DDRTest(void);
 #endif
 
 extern BaseType_t CLIToggle5kHzTraffic(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+extern BaseType_t CLIRxPacketsSec(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString);
+extern bool PacketTaskTransmitterRunning(void);
 
 static const test_info_t s_TESTS[] = {
     {'1', &ViewRTOSRunTimeStats, "VIEW RTOS RUNTIME STATS"   },
@@ -126,7 +128,10 @@ static const test_info_t s_TESTS[] = {
 static const CLI_Command_Definition_t s_CLI_COMMAND_LIST[] = {
     {"toggle-5khz-tx",
      "\r\ntoggle-5khz-tx:\r\n Toggle 5kHz Transmitter\r\n",
-     &CLIToggle5kHzTraffic, 0}
+     &CLIToggle5kHzTraffic, 0},
+    {"rx-packets-sec",
+     "\r\nrx-packets-sec:\r\n Show packets received/sec\r\n",
+     &CLIRxPacketsSec, 0}
 };
 
 static size_t s_nTestMenuTopIndx = 0;
@@ -209,13 +214,15 @@ portTASK_FUNCTION(Task1, pParams)
 
     for( ; ; )
     {
-        int m = toupper( WaitForAKeyPress( pdMS_TO_TICKS(1000) ) );
+        int m = WaitForAKeyPress( pdMS_TO_TICKS(1000) );
 
         if(m < 0)
         {
             ShowTime();
             continue;
         }
+
+        m = toupper(m);
 
         int c;
         for(c = 0; c < _countof(s_TESTS); c++)
@@ -344,6 +351,7 @@ void ViewPHYRegisters(void)
 
                     PHY_MMDRead(phyaddr, devad, index);
                 }
+
                 break;
 
 #if 0
@@ -358,11 +366,11 @@ void ViewPHYRegisters(void)
 
                 break;
 #endif
-
-            case 'X':
+            case '\x1B':
                 bExit = true;
                 continue;
             }
+
         }
         else
         {
@@ -435,7 +443,7 @@ void ViewEthernetStats(void)
         {
             switch( toupper(c) )
             {
-            case 'X':
+            case '\x1B':
                 bExit = true;
                 break;
 
@@ -607,6 +615,11 @@ void RegisterTestHarnessCLICommands(void)
 
 void AliveTimerCallback(TimerHandle_t xTimer)
 {
+    if( PacketTaskTransmitterRunning() )
+    {
+        return;
+    }
+
 #if defined(__PIC32MZ__)
     LATHINV = 0x04;
 #elif defined(__PIC32MX__)
@@ -799,6 +812,7 @@ void DDRTest(void)
 {
     uint32_t addr; uint32_t size;
 
+    printf("\r\nNote: Cached region start 0x88000000, uncached region start 0xA8000000");
     printf("\r\nInput start address: ");
 
     if( !InputHexValue(9, (char *) g_pTestBuffer, &addr) )

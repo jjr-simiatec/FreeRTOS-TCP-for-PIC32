@@ -30,23 +30,36 @@
 #include <stdbool.h>
 
 #define PACKET_TIMER_HZ (5000U)
-#define BYPASS_TCPIP_STACK
-#define BUILD_TRANSMITTER
+#define SAMPLE_TIMER_HZ (10U)
 
 #if defined(__PIC32MZ__)
 #define LATxSET LATHSET
 #define LATxCLR LATHCLR
+#define LATxINV LATHINV
 #elif defined(__PIC32MX__)
 #define LATxSET LATDSET
 #define LATxCLR LATDCLR
+#define LATxINV LATDINV
+#endif
+
+#if !defined(__32MZ2048EFM144__)
+#define BUILD_TRANSMITTER
+//#define BYPASS_TCPIP_STACK
 #endif
 
 void __attribute__((interrupt(IPL0AUTO), vector(_TIMER_3_VECTOR))) vT3InterruptWrapper(void);
 
+#if defined(BUILD_TRANSMITTER)
 static TaskHandle_t s_hPacketTask = NULL;
-#define DESTINATION_ADDR FreeRTOS_inet_addr_quick(224, 1, 2, 3)
-//#define DESTINATION_ADDR FreeRTOS_inet_addr_quick(10, 10, 10, 11)
+//#define DESTINATION_ADDR FreeRTOS_inet_addr_quick(224, 1, 2, 3)
+#define DESTINATION_ADDR FreeRTOS_inet_addr_quick(172, 16, 1, 201)
 #define SOURCE_PORT FreeRTOS_htons(8111)
+#else
+static uint32_t s_packetCount = 0;
+static uint32_t s_packetsSec = 0;
+static uint8_t s_sampleCount = 0;
+#endif
+
 #define DESTINATION_PORT FreeRTOS_htons(12345)
 
 #define PAYLOAD_SIZE    8U
@@ -71,19 +84,32 @@ void vT3InterruptHandler(void)
 {
     IFS0CLR = _IFS0_T3IF_MASK;
 
+#if defined(BUILD_TRANSMITTER)
     LATxSET = 0x01;
 
     BaseType_t bHigherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(s_hPacketTask, &bHigherPriorityTaskWoken);
 
     portEND_SWITCHING_ISR(bHigherPriorityTaskWoken);
+#else
+    s_sampleCount++;
+
+    if(s_sampleCount < SAMPLE_TIMER_HZ)
+    {
+        return;
+    }
+
+    s_packetsSec = s_packetCount;
+    s_packetCount = 0;
+    s_sampleCount = 0;
+#endif
 }
 
 void Toggle5kHzTraffic(void)
 {
 #if defined(BUILD_TRANSMITTER)
     T3CONINV = _T3CON_ON_MASK;
-    LATxCLR = 0x03;
+    LATxCLR = 0x07;
 
     printf("\r\nTransmitter is %s.", T3CONbits.TON ? "running" : "inactive");
 #endif
@@ -93,14 +119,34 @@ BaseType_t CLIToggle5kHzTraffic(char *pcWriteBuffer, size_t xWriteBufferLen, con
 {
 #if defined(BUILD_TRANSMITTER)
     T3CONINV = _T3CON_ON_MASK;
-    LATxCLR = 0x03;
+    LATxCLR = 0x07;
 
     snprintf(pcWriteBuffer, xWriteBufferLen, "Transmitter is %s.", T3CONbits.TON ? "running" : "inactive");
 #else
     snprintf(pcWriteBuffer, xWriteBufferLen, "Not implemented.");
 #endif
-    
+
     return pdFALSE;
+}
+
+BaseType_t CLIRxPacketsSec(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
+{
+#if defined(BUILD_TRANSMITTER)
+    snprintf(pcWriteBuffer, xWriteBufferLen, "Not implemented.");
+#else
+    snprintf(pcWriteBuffer, xWriteBufferLen, "Rx packets/sec=%u.", s_packetsSec);
+#endif
+
+    return pdFALSE;
+}
+
+bool PacketTaskTransmitterRunning(void)
+{
+#if defined(BUILD_TRANSMITTER)
+    return (T3CON & _T3CON_ON_MASK) != 0;
+#else
+    return false;
+#endif
 }
 
 #if defined(BUILD_TRANSMITTER)
@@ -215,8 +261,23 @@ portTASK_FUNCTION(PacketTask, pParams)
 {
     portTASK_USES_FLOATING_POINT();
 
+    T3CON = (0b111 << _T3CON_TCKPS_POSITION);
+    TMR3 = 0;
+
+    PR3 = ((configPERIPHERAL_CLOCK_HZ / 256) / SAMPLE_TIMER_HZ) - 1;
+
+    // Set the timer interrupt priority to be above the kernel priority so
+    // the timer is not effected by the kernel activity
+    IPC3bits.T3IP = configMAX_SYSCALL_INTERRUPT_PRIORITY;
+
+    // Prepare for interrupts
+    IFS0bits.T3IF = 0;
+    IEC0bits.T3IE = 1;
+
     // Wait for the link to come up
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
+    T3CONSET = _T3CON_ON_MASK;
 
     Socket_t tRxSocket = FreeRTOS_socket(FREERTOS_AF_INET, FREERTOS_SOCK_DGRAM, FREERTOS_IPPROTO_UDP);
 
@@ -240,12 +301,13 @@ portTASK_FUNCTION(PacketTask, pParams)
         uint8_t *pRxData = NULL;
         socklen_t tRxAddrSize = sizeof(tRxAddr);
 
-        LATxCLR = 0x04;
+        LATxCLR = 0x02;
         int32_t result = FreeRTOS_recvfrom(tRxSocket, &pRxData, 0, FREERTOS_ZERO_COPY, &tRxAddr, &tRxAddrSize);
-        LATxSET = 0x04;
 
         if(result > 0)
         {
+            LATxSET = 0x02;
+            s_packetCount++;
             FreeRTOS_ReleaseUDPPayloadBuffer(pRxData);
         }
     }
