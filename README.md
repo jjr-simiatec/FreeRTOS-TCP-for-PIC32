@@ -127,3 +127,12 @@ The following configuration parameters describe the hardware configuration of yo
 `ipconfigPIC32_PHY_ENABLE_INTERRUPT()` - Prepare the PIC32 to accept PHY interrupts  
 `ipconfigPIC32_PHY_DISABLE_INTERRUPT()` - Mask PHY interrupts  
 `ipconfigPIC32_PHY_CLEAR_INTERRUPT()` - Acknowledge the PHY interrupt after processing  
+
+## Other experiments
+
+As well as testing the driver, the test harness demonstrates the following additional features:
+  * Wake on LAN;
+  * Programmatic Ethernet interface up/down;
+  * SRAM/Flash wait state configuration for the PIC32MX;
+  * DDR2 controller initialisation for the PIC32MZ DA;
+  * Built-in tests: March C- RAM test, Ethernet loopback, Ethernet cable diagnostic.
