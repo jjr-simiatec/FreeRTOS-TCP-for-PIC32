@@ -38,8 +38,8 @@ The Ethernet module is the same across the PIC32 range and this driver has been 
 The following software and source code packages are required:
   * MPLAB X IDE version 5.40 or later.
   * MPLAB XC32 Compiler version 2.41 or later.
-  * FreeRTOS source code version 10.3.1.
-  * FreeRTOS+FAT source code version 191108a-MIT.
+  * FreeRTOS source code version 10.4.0.
+  * FreeRTOS Labs source code version 200218.
 
 [**Note**: there are fixes for FreeRTOS+TCP and FreeRTOS+FAT that have not been released officially yet. See the known issues section for more info.]
 
@@ -49,10 +49,10 @@ You don't need MPLAB Harmony, the Microchip Legacy Peripheral Libraries or Micro
 
 ## How to build
 
-1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS+FAT source code. Put the FreeRTOS+FAT source in the FreeRTOS-Plus directory. Alternatively, create symbolic links to the locations of the source trees. For example on Windows:  
-`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS"`  
-`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOSv10.2.1\FreeRTOS-Plus"`  
-`mklink /d FreeRTOS-Plus\Source\FreeRTOS-Plus-FAT "%USERPROFILE%\Documents\FreeRTOS-Plus-FAT-160919a-MIT"`
+1. In the root folder (marked `$` in the project structure above), you will need to copy/unpack the FreeRTOS and FreeRTOS-Labs source code. Alternatively, create symbolic links to the locations of the source trees. For example on Windows:  
+`mklink /d FreeRTOS "%USERPROFILE%\Documents\FreeRTOS\FreeRTOS"`  
+`mklink /d FreeRTOS-Plus "%USERPROFILE%\Documents\FreeRTOS\FreeRTOS-Plus"`  
+`mklink /d FreeRTOS-Labs "%USERPROFILE%\Documents\FreeRTOS-Labs\FreeRTOS-Labs"`
 
 2. Using MPLABX IDE, open the projects `CLI`, `FAT`, `RTOS` and `TCPIP`.
 
