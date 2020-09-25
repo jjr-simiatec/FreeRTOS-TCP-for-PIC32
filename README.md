@@ -31,7 +31,7 @@ To use the source code as-is, you need one of the following Starter Kits:
 
 The Ethernet module is the same across the PIC32 range and this driver has been verified to work on PIC32MX795F512L, PIC32MZ2048ECM144, PIC32MZ2048EFM144 and PIC32MZ2064DAB288. The supported Ethernet PHYs include DP83848, LAN8740A and LAN9303.
 
-[**Note**: the source code should compile and run on the non-crypto variants of the PIC32MZ Starter Kits but project settings will need to be changed.]
+[**Note**: the source code should compile and run on the non-crypto variants of the PIC32MZ Starter Kits but project settings will need to be changed and `PIC32_HAS_WORKING_TRNG` will need to be undefined.]
 
 [**Note**: the replacement for DM320004, Microchip part no. DM320004-2, has minimal changes to the circuits but does use a different PHY from the original.]
 
