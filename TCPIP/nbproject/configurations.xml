@@ -67,7 +67,7 @@
       <itemPath>DP83848.c</itemPath>
       <itemPath>LAN8740A.c</itemPath>
       <itemPath>LAN9303.c</itemPath>
-      <itemPath>FreeRTOS_ARP.c</itemPath>
+      <itemPath>../FreeRTOS-Plus/Source/FreeRTOS-Plus-TCP/FreeRTOS_ARP.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
