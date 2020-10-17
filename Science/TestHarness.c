@@ -23,6 +23,7 @@
 #include <timers.h>
 // TCP/IP Stack
 #include <FreeRTOS_IP.h>
+#include <FreeRTOS_Sockets.h>
 // C Runtime
 #include <stdio.h>
 #include <stdbool.h>
@@ -98,6 +99,7 @@ static void ResetBoard(void);
 static void TestWOL(void);
 static void ToggleEthInterface(void);
 static void RunEthernetSelfTest(void);
+static void NetworkStackStatus(void);
 extern void Toggle5kHzTraffic(void);
 static void AliveTimerCallback(TimerHandle_t xTimer);
 
@@ -119,6 +121,7 @@ static const test_info_t s_TESTS[] = {
     {'7', &TestWOL,              "TEST WAKE ON LAN"          },
     {'8', &ToggleEthInterface,   "ETHERNET INTERFACE UP/DOWN"},
     {'9', &RunEthernetSelfTest,  "ETHERNET SELF TEST"        },
+    {'N', &NetworkStackStatus,   "NETWORK STACK STATUS"      },
 #if defined(__32MZ2064DAB288__)
     {'D', &DDRTest,              "EXTERNAL DDR TESTS"        },
 #endif
@@ -581,6 +584,15 @@ void RunEthernetSelfTest(void)
         printf("\r\nTest result is %s", nTestResult ? "PASS" : "FAIL");
     else
         printf("\r\nTest timed out!");
+}
+
+void NetworkStackStatus(void)
+{
+    ShowTestTitle("NETWORK STACK STATUS");
+
+    FreeRTOS_PrintARPCache();
+    printf("\r\n");
+    FreeRTOS_netstat();
 }
 
 void ResetBoard(void)
